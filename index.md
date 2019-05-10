@@ -33,12 +33,12 @@ If you would like to check out this project's GitHub repository, you can find it
 
 A project for my Computer Vision course where I used Python to train a database to form a vocabulary of "visual words," a series of image features that correspond to certain objects that help in identifying said objects. I then used two of Python Scikit's classifier algorithms, a [k-nearest-neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) classifier and a [support vector machine](https://en.wikipedia.org/wiki/Support-vector_machine) classifier, to attempt to identify the contents of sample images. Unfortunately, the only easily presentable results of this process that I was able to produce are in the form of [confusion matrices](https://en.wikipedia.org/wiki/Confusion_matrix), which are shown below.
 
-<img src="tocshi.github.io/Library/figure_16.png" width="50%" height="50%"> <img src="tocshi.github.io/Library/figure_17.png" width="50%" height="50%">
+<img src="tocshi.github.io/Library/figure_16.png" width="48%" height="48%"> <img src="tocshi.github.io/Library/figure_17.png" width="48%" height="48%">
 <br>
 ### Automatically Generated Texture Synthesis
 
-<img src="tocshi.github.io/Library/moon.JPG" width="50%" height="50%"> <img src="tocshi.github.io/Library/MoonkaS.JPG" width="50%" height="50%">
-<img src="tocshi.github.io/Library/Momiji.PNG" width="50%" height="50%"> <img src="tocshi.github.io/Library/MomiS.JPG" width="50%" height="50%">
+<img src="tocshi.github.io/Library/moon.JPG" width="48%" height="48%"> <img src="tocshi.github.io/Library/MoonkaS.JPG" width="48%" height="48%">
+<img src="tocshi.github.io/Library/Momiji.PNG" width="48%" height="48%"> <img src="tocshi.github.io/Library/MomiS.JPG" width="48%" height="48%">
 <br>
 ### Template-Matching Face Detection
 
@@ -46,7 +46,7 @@ A project for my Computer Vision course where I used Python to train a database 
 <br>
 ### C++ Colour Picker and Fill
 
-<img src="tocshi.github.io/Library/dfscustom.gif" width="50%" height="50%"> <img src="tocshi.github.io/Library/bfscustom.gif" width="50%" height="50%">
+<img src="tocshi.github.io/Library/dfscustom.gif" width="48%" height="48%"> <img src="tocshi.github.io/Library/bfscustom.gif" width="48%" height="48%">
 <br>
 ### Buses ‘R’ Us Android Application
 
