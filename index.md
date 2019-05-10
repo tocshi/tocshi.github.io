@@ -15,8 +15,7 @@ My pride and joy. A [Touhou Project](https://en.wikipedia.org/wiki/Touhou_Projec
 Demonstration video: <br>
 **NOTE THAT GRAPHICS AND SOUNDS ARE NOT FINAL AND SUBJECT TO DRASTIC CHANGE**
 
-*video goes here*
-
+<iframe width="560" height="315" src="https://www.youtube.com/embed/t1HCjLRCn9I" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 **DISCLAIMER:**
 * The player character *Hakurei Reimu* belongs to ZUN.
@@ -44,6 +43,7 @@ A project for my Computer Vision course where I used Python to demonstrate the [
 <br>
 ### Template-Matching Face Detection
 
+A project for my Computer Vision course where I used Python to 
 <img src="tocshi.github.io/Library/2.PNG" width="97%" height="97%">
 <br>
 ### C++ Colour Picker and Fill
