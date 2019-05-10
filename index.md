@@ -31,7 +31,9 @@ If you would like to check out this project's GitHub repository, you can find it
 
 ### Image Classifier Using Bag-of-Words
 
-A project for my Computer Vision course where I used Python to 
+A project for my Computer Vision course where I used Python to train a database to form a vocabulary of "visual words," a series of image features that correspond to certain objects that help in identifying said objects. I then used two of Python Scikit's classifier algorithms, a [k-nearest-neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) classifier and a [support-vector machine](https://en.wikipedia.org/wiki/Support-vector_machine) classifier, to attempt to identify the contents of sample images. Unfortunately, the only easily presentable results of this process that I was able to produce are in the form of [confusion matrices](https://en.wikipedia.org/wiki/Confusion_matrix), which are shown below.
+
+<img src="tocshi.github.io/Library/figure_16.PNG" alt="knn" width="200"/><img src="tocshi.github.io/Library/figure_17.PNG" alt="svm" width="200"/>
 
 ### Automatically Generated Texture Synthesis
 
