@@ -7,7 +7,7 @@ I'm also a video game junkie, and a digital artist. I have plans to work a 3D Ac
 
 
 ## Personal Projects
-
+<br><br>
 
 ### Skirmish with the Miko Fox
 
