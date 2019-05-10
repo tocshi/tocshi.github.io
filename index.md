@@ -1,7 +1,7 @@
 # About Me
 
 I'm a 2nd year Computer Science major studying at the University of British Columbia.
-I'm also a video game junkie, and a digital artist. I have plans to work a 3D Action RPG using Unity in the near future, after I finish my current personal project.
+I'm also a video game enthusiast, and a digital artist. I have plans to work a 3D Action RPG using Unity in the near future, after I finish my current personal project.
 
 ---
 
@@ -37,6 +37,8 @@ A project for my Computer Vision course where I used Python to train a database 
 <br>
 ### Automatically Generated Texture Synthesis
 
+A project for my Computer Vision course where I used Python to demonstrate the [Efros and Leung method](https://people.eecs.berkeley.edu/~efros/research/EfrosLeung.html) of texture synthesis. Simply put, it fills in a portion of an image with a sample texture from a different part of the image, using a comparison of the sum of squared differences between the to the fill area and the sample texture to determine how the texture is generated. This allows the resultant texture fill to look as natural as possible. I tested this process on multiple images, two of which are shown below.
+
 <img src="tocshi.github.io/Library/moon.JPG" width="48%" height="48%"> <img src="tocshi.github.io/Library/MoonkaS.JPG" width="48%" height="48%">
 <img src="tocshi.github.io/Library/Momiji.PNG" width="48%" height="48%"> <img src="tocshi.github.io/Library/MomiS.JPG" width="48%" height="48%">
 <br>
@@ -48,7 +50,6 @@ A project for my Computer Vision course where I used Python to train a database 
 
 <img src="tocshi.github.io/Library/dfscustom.gif" width="48%" height="48%"> <img src="tocshi.github.io/Library/bfscustom.gif" width="48%" height="48%">
 <br>
-### Buses ‘R’ Us Android Application
 
 
 ---
