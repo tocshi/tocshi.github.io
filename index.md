@@ -23,21 +23,22 @@ Demonstration video: <br>
 * The player character *Hakurei Reimu* belongs to ZUN.
 * The enemy character *Tamamo no Mae* and the BGM belongs to TYPE-MOON.
 
+If you would like to check out this project's GitHub repository, you can find it [here](https://github.com/tocshi/skirmish-with-the-mikofox).
 
 ---
 
 
 ## Academic Projects
 
-### Skirmish with the Miko Fox
+### Image Classifier Using Bag-of-Words
 
-### Skirmish with the Miko Fox
+### Automatically Generated Texture Synthesis
 
-### Skirmish with the Miko Fox
+### Template-Matching Face Detection
 
-### Skirmish with the Miko Fox
+### C++ Colour Picker and Fill
 
-### Skirmish with the Miko Fox
+### Buses ‘R’ Us Android App
 
 
 ---
