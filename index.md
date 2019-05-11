@@ -43,7 +43,8 @@ A project for my Computer Vision course where I used Python to demonstrate the [
 <br>
 ### Template-Matching Face Detection
 
-A project for my Computer Vision course where I used Python to 
+A project for my Computer Vision course where I used Python to attempt to detect faces in an image by matching a generic face template to various scalings of said image. I used a [Gaussian Pyramid](https://www.cs.utah.edu/~arul/report/node12.html) in order to preserve details while downsizing the image, and then used a pre-built [normalized cross-correlation](https://www.mathworks.com/help/images/ref/normxcorr2.html) function to find areas that resembled the template. Below is a sample image on which I ran my face detector, showing that although it was able to find all the faces in the image, it is still far from perfect as it tends to find faces where there are none.
+
 <img src="tocshi.github.io/Library/2.PNG" width="97%" height="97%">
 <br>
 ### C++ Colour Picker and Fill
