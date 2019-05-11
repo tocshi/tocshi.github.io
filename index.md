@@ -53,8 +53,7 @@ A project for my Data Structures course where I worked with a partner to create 
 
 <img src="tocshi.github.io/Library/dfscustom.gif" width="48%" height="48%"> <img src="tocshi.github.io/Library/bfscustom.gif" width="48%" height="48%">
 
-|Left: Filling using the stack data structure. | Right: Filling using the queue data structure|
-|:----|----:|
+Left: Filling using the stack data structure.  Right: Filling using the queue data structure
 <br>
 
 
