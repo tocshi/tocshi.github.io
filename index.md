@@ -1,7 +1,7 @@
 # About Me
 
 I'm a 2nd year Computer Science major studying at the University of British Columbia.
-I'm also a video game enthusiast, and a digital artist. I am currently working on a top-down Unity-based Action RPG, featuring a self-made cast of characters and story.
+I'm also a video game enthusiast, and a digital artist. I am currently working on a 2D top-down Action RPG in GameMaker Studio 2, featuring a self-made cast of characters and story.
 
 ---
 
@@ -10,7 +10,7 @@ I'm also a video game enthusiast, and a digital artist. I am currently working o
 <br>
 ### Skirmish with the Miko Fox - 2019
 
-My largest programming project so far, albeit unfinished. A [Touhou Project](https://en.wikipedia.org/wiki/Touhou_Project)-styled game written using the C-like language [Danmakufu ph3](https://dmf.shrinemaiden.org/wiki/Main_Page). I started making individual scripts using Danmakufu in August of 2018, and started working on a more unified game in January of 2019. Ever since then I have been adding small bits here and there to the game during my spare time. As of August 2019, this project has been discontinued due to a lack of assets critical to this project's success. I have since shifted focus to working on my Unity-based RPG.
+My largest programming project so far, albeit unfinished. A [Touhou Project](https://en.wikipedia.org/wiki/Touhou_Project)-styled game written using the C-like language [Danmakufu ph3](https://dmf.shrinemaiden.org/wiki/Main_Page). I started making individual scripts using Danmakufu in August of 2018, and started working on a more unified game in January of 2019. Ever since then I have been adding small bits here and there to the game during my spare time. As of August 2019, this project has been discontinued due to a lack of assets critical to this project's success. I have since shifted focus to working on my GameMaker-based RPG.
 
 Demonstration video: <br>
 **NOTE THAT GRAPHICS AND SOUNDS WERE NOT INTENDED TO BE FINAL**
