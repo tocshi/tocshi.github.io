@@ -1,9 +1,7 @@
 # [Back to main page](./index.md)
 
 ---
-
-
-## Personal Projects 
+ 
 <br>
 ### Skirmish with the Miko Fox - 2019
 

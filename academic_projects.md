@@ -2,8 +2,12 @@
 
 ---
 
+<br>
+### Dataset Analysis Using Scikit Learn - 2020
 
-## Academic Projects
+<br>
+### Data Manager Mini-Application - 2020
+
 <br>
 ### Image Classifier Using Bag-of-Words - 2019
 

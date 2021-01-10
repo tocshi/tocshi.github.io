@@ -7,6 +7,8 @@ I'm also a video game enthusiast, and a digital artist. I am currently working o
 
 ---
 
-## [Personal Projects](./personal_projects.md)
+## [__Personal Projects__](./personal_projects.md)
 
-## [Academic Projects](./academic_projects.md)
+<br>
+
+## [__Academic Projects__](./academic_projects.md)
