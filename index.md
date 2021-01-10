@@ -1,5 +1,7 @@
 # About Me
 
+[test](./test.md)
+
 I'm a 2nd year Computer Science major studying at the University of British Columbia.
 I'm also a video game enthusiast, and a digital artist. I am currently working on a 2D top-down Action RPG in GameMaker Studio 2, featuring a self-made cast of characters and story.
 
