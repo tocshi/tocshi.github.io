@@ -1,6 +1,14 @@
 # [Back to main page](./index.md)
 
 ---
+<br>
+### Project "Blademancer" - 2021
+
+<br>
+### Chimerarms - 2020
+
+<br>
+### Project "Lila" - Since 2019
  
 <br>
 ### Skirmish with the Miko Fox - 2019
