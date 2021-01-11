@@ -7,6 +7,8 @@ I'm also a video game enthusiast, and a digital artist. I am currently working o
 
 ---
 
+# Click the links to view my projects!
+
 ## [_Personal Projects_](./personal_projects.md)
 
 <br>
