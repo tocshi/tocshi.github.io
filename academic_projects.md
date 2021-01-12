@@ -7,15 +7,15 @@
 
 Throughout my Machine Learning course I worked with Python's [Scikit Learn](https://scikit-learn.org/stable/) and [Pandas](https://pandas.pydata.org/) libraries in Jupyter Lab to analyze datasets and train machine learning models to make predictions about new data. Shown below, is a screenshot of my analysis on a dataset about [Airbnb](https://www.airbnb.com/) rental listings, where I use [SHAP](https://shap.readthedocs.io/en/latest/) to determine which attributes of an Airbnb listing contribute the most to its popularity, which is measured by how many reviews it gets per month.
 
-<img src="tocshi.github.io/Library/330proj_1.PNG" width="97%" height="97%">
+<img src="tocshi.github.io/Library/330proj_1.png" width="97%" height="97%">
 
 <br>
 ### Data Manager Mini-Application - 2020
 
 A project for my Databases course where I worked with a small team to make a Java application that uses SQL to view and manage the values of pre-made data tables. A simple GUI is implemented to make our application user-friendly and human-readable. This application was developed with the context of a "Fantasy Role-Playing Game" in mind, and is intended to be used for such. Below are some screenshots of our application in action, changing and viewing data values respectively.
 
-<img src="tocshi.github.io/Library/304proj_1.PNG" width="97%" height="97%">
-<img src="tocshi.github.io/Library/304proj_2.PNG" width="97%" height="97%">
+<img src="tocshi.github.io/Library/304proj_1.png" width="97%" height="97%">
+<img src="tocshi.github.io/Library/304proj_2.png" width="97%" height="97%">
 
 <br>
 ### Image Classifier Using Bag-of-Words - 2019
@@ -57,3 +57,6 @@ Left: Filling using the stack data structure. Right: Filling using the queue dat
 [family]: tocshi.github.io/Library/2.PNG "Template-Matching Face Decection"
 [dfs]: tocshi.github.io/Library/dfscustom.gif "Depth-First Search"
 [bfs]: tocshi.github.io/Library/bfscustom.gif "Breadth-First Search"
+[330]: tocshi.github.io/Library/330proj_1.png "Machine Learning Dataset Analysis"
+[304_1]: tocshi.github.io/Library/304proj_1.png "Game Data Manager 1"
+[304_2]: tocshi.github.io/Library/304proj_1.png "Game Data Manager 2"
