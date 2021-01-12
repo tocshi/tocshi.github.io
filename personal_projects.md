@@ -13,7 +13,7 @@ If you would like to check out this project's GitHub repository, you can find it
 <br>
 ### Chimerarms - 2020
 
-My submission for the game jam [Miz Jam 1](https://itch.io/jam/miz-jam-1), where entrants have 48 hours to creat a game using the [Kenney 1-Bit Pack](https://kenney.nl/assets/bit-pack) art pack for the game's graphics. I saw the art pack's various sprites for fantasy-style weapons and came up with an idea of mashing them together to create combinations of weapons that share some attributes from the weapons used to make them. It was a little challenging to scale the difficulty of the game with the random natures of the enemy spawns, but I was content with what I had submitted at the time of the deadline.
+My submission for the game jam [Miz Jam 1](https://itch.io/jam/miz-jam-1), where entrants have 48 hours to create a game using the [Kenney 1-Bit Pack](https://kenney.nl/assets/bit-pack) art pack for the game's graphics. I saw the art pack's various sprites for fantasy-style weapons and came up with an idea of mashing them together to create combinations of weapons that share some attributes from the weapons used to make them. It was a little challenging to scale the difficulty of the game with the random natures of the enemy spawns, but I was content with what I had submitted at the time of the deadline.
 
 [Click here if you want to download the game to try it out for yourself!](https://tocshi.itch.io/chimerarms)
 
