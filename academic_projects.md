@@ -5,13 +5,22 @@
 <br>
 ### Dataset Analysis Using Scikit Learn - 2020
 
+Throughout my Machine Learning course I worked with Python's [Scikit Learn](https://scikit-learn.org/stable/) and [Pandas](https://pandas.pydata.org/) libraries in Jupyter Lab to analyze datasets and train machine learning models to make predictions about new data. Shown below, is a screenshot of my analysis on a dataset about [Airbnb](https://www.airbnb.com/) rental listings, where I use [SHAP](https://shap.readthedocs.io/en/latest/) to determine which attributes of an Airbnb listing contribute the most to its popularity, which is measured by how many reviews it gets per month.
+
+<img src="tocshi.github.io/Library/330proj_1.PNG" width="97%" height="97%">
+
 <br>
 ### Data Manager Mini-Application - 2020
+
+A project for my Databases course where I worked with a small team to make a Java application that uses SQL to view and manage the values of pre-made data tables. A simple GUI is implemented to make our application user-friendly and human-readable. This application was developed with the context of a "Fantasy Role-Playing Game" in mind, and is intended to be used for such. Below are some screenshots of our application in action, changing and viewing data values respectively.
+
+<img src="tocshi.github.io/Library/304proj_1.PNG" width="97%" height="97%">
+<img src="tocshi.github.io/Library/304proj_2.PNG" width="97%" height="97%">
 
 <br>
 ### Image Classifier Using Bag-of-Words - 2019
 
-A project for my Computer Vision course where I used Python to train a database to form a vocabulary of "visual words," a series of image features that correspond to certain objects that help in identifying said objects. I then used two of Python Scikit's classifier algorithms, a [k-nearest-neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) classifier and a [support vector machine](https://en.wikipedia.org/wiki/Support-vector_machine) classifier, to attempt to identify the contents of sample images. Unfortunately, the only easily presentable results of this process that I was able to produce are in the form of [confusion matrices](https://en.wikipedia.org/wiki/Confusion_matrix), which are shown below.
+A project for my Computer Vision course where I used Python to train a database to form a vocabulary of "visual words," a series of image features that correspond to certain objects that help in identifying said objects. I then used two of Python Scikit Learn's classifier algorithms, a [k-nearest-neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) classifier and a [support vector machine](https://en.wikipedia.org/wiki/Support-vector_machine) classifier, to attempt to identify the contents of sample images. Unfortunately, the only easily presentable results of this process that I was able to produce are in the form of [confusion matrices](https://en.wikipedia.org/wiki/Confusion_matrix), which are shown below.
 
 <img src="tocshi.github.io/Library/figure_16.png" width="48%" height="48%"> <img src="tocshi.github.io/Library/figure_17.png" width="48%" height="48%">
 <br>

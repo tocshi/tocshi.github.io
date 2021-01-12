@@ -9,8 +9,8 @@ I'm also a video game enthusiast, and a digital artist. I am currently working o
 
 # Click the links to view my projects!
 
-## [_Personal Projects_](./personal_projects.md)
-
 <br>
 
-## [_Academic Projects_](./academic_projects.md)
+## [Personal Projects](./personal_projects.md)
+
+## [Academic Projects](./academic_projects.md)
