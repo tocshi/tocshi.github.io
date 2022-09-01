@@ -41,7 +41,7 @@ A project for my Computer Vision course where I used Python to attempt to detect
 
 A project for my Data Structures course where I worked with a partner to create simplified versions of the [Stack](https://www.geeksforgeeks.org/stack-data-structure/) and [Queue](https://www.geeksforgeeks.org/queue-data-structure/) data structures using C++. With our makeshift stack and queue, we then created a [flood fill algorithm](https://en.wikipedia.org/wiki/Flood_fill) that would fill an image area with a pattern determined by a separate algorithm we made. Using different data structures to store the data for each pixel would yield the same resultant image, but different intermediate steps of reaching the final result, as shown below.
 
-<img src="tocshi.github.io/Library/dfscustom.gif" width="48%" height="48%"> <img src="tocshi.github.io/Library/bfscustom.gif" width="48%" height="48%">
+<img src="tocshi.github.io/Library/dfscustom.gif" width="48%" height="48%"> ![](tocshi.github.io/Library/bfscustom.gif | width="48%" height="48%")
 Left: Filling using the stack data structure. Right: Filling using the queue data structure
 <br>
 
@@ -59,4 +59,4 @@ Left: Filling using the stack data structure. Right: Filling using the queue dat
 [bfs]: tocshi.github.io/Library/bfscustom.gif "Breadth-First Search"
 [330]: tocshi.github.io/Library/330proj_1.png "Machine Learning Dataset Analysis"
 [304_1]: tocshi.github.io/Library/304proj_1.png "Game Data Manager 1"
-[304_2]: tocshi.github.io/Library/304proj_1.png "Game Data Manager 2"
+[304_2]: tocshi.github.io/Library/304proj_2.png "Game Data Manager 2"
