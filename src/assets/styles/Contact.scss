@@ -21,6 +21,16 @@
   fieldset {
     background-color: white;
   }
+
+  .MuiOutlinedInput-input {
+    z-index: 1;
+  }
+
+  .MuiInputLabel-shrink {
+    background-color: white;
+    padding: 0 5px;
+    border-radius: 3px;
+  }
 }
 
 label {
