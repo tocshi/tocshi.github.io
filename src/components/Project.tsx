@@ -1,6 +1,3 @@
-import React from "react";
-import cpsc330proj from '../assets/images/330proj_1.png';
-import cpsc304proj from '../assets/images/304proj_1.png';
 import lifeofsaca from '../assets/images/lifeofsaca.png';
 import castle0 from '../assets/images/Castle0.png';
 import castle1 from '../assets/images/Castle1.png';
