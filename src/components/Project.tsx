@@ -24,11 +24,6 @@ function Project() {
                 <p>A project made for UBC's CPSC427 course. I led a team of 6 to create and finish a game project using C++ from scratch under tight deadlines and restrictions. I was in charge of implementing many features, such as combat, game progression, enemy behaviour, etc. along with organizing team planning and helping others with their feature implementations. I myself have also spent a substantial amount of time play-testing and improving the game based on feedback I've received from various testers. <a href="https://tocshi.itch.io/adrift-in-somnium" target="_blank" rel="noreferrer">Click here to download the game for yourself!</a></p>
             </div>
             <div className="project">
-                <img src={cpsc330proj} className="zoom" alt="thumbnail" width="100%"/>
-                <h2>Dataset Analysis Using Scikit Learn</h2>
-                <p>Throughout my Machine Learning course I worked with Python's <a href="https://scikit-learn.org/stable/" target="_blank" rel="noreferrer">Scikit Learn</a> and <a href="https://pandas.pydata.org/" target="_blank" rel="noreferrer">Pandas</a> libraries in Jupyter Lab to analyze datasets and train machine learning models to make predictions about new data. Shown is a screenshot of my analysis on a dataset of <a href="https://www.airbnb.com/" target="_blank" rel="noreferrer">Airbnb</a> rental listings, where I use <a href="https://shap.readthedocs.io/en/latest/" target="_blank" rel="noreferrer">SHAP</a> to determine which attributes of an Airbnb listing contribute the most to its popularity, which is measured by how many reviews it gets per month.</p>
-            </div>
-            <div className="project">
                 <iframe width="100%" className="zoom" style={{ aspectRatio: "16/9" }} src="https://www.youtube.com/embed/4yDRdI9i6IA" title="Chimerarms - Demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"/>
                 <a href="https://tocshi.itch.io/chimerarms" target="_blank" rel="noreferrer"><h2>Chimerarms</h2></a>
                 <p>My submission for the game jam <a href="https://itch.io/jam/miz-jam-1" target="_blank" rel="noreferrer">Miz Jam 1</a>, where entrants have 48 hours to create a game using the <a href="https://kenney.nl/assets/bit-pack" target="_blank" rel="noreferrer">Kenney 1-Bit Pack</a> art pack for the game's graphics. I saw the art pack's various sprites for fantasy-style weapons and came up with an idea of mashing them together to create combinations of weapons that share some attributes from the weapons used to make them. It was a little challenging to scale the difficulty of the game with the random natures of the enemy spawns, but I was content with what I had submitted at the time of the deadline. <a href="https://tocshi.itch.io/chimerarms" target="_blank" rel="noreferrer">Click here to download the game for yourself!</a></p>
@@ -52,11 +47,6 @@ function Project() {
                 <iframe width="100%" className="zoom" style={{ aspectRatio: "16/9" }} src="https://www.youtube.com/embed/t1HCjLRCn9I" title="Skirmish with the Miko Fox - Demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"/>
                 <a href="https://youtu.be/t1HCjLRCn9I" target="_blank" rel="noreferrer"><h2>Skirmish with the Miko Fox</h2></a>
                 <p>A <a href="https://en.wikipedia.org/wiki/Touhou_Project" target="_blank" rel="noreferrer">Touhou Project</a>-styled game written using the C-like language <a href="https://dmf.shrinemaiden.org/wiki/Main_Page" target="_blank" rel="noreferrer">Danmakufu ph3</a>. I intended for the game to consist of a single "boss fight" encounter that focused on displaying colourful projectile patterns rather than conventional gameplay. I started making individual scripts using Danmakufu in August of 2018, and started working on a more unified game in January of 2019.</p>
-            </div>
-            <div className="project">
-                <img src={cpsc304proj} className="zoom" alt="thumbnail" width="100%"/>
-                <h2>Data Manager Mini Application</h2>
-                <p>A project for my Databases course where I worked with a small team to make a Java application that uses SQL to view and manage the values of pre-made data tables. A simple GUI is implemented to make our application user-friendly and human-readable.</p>
             </div>
         </div>
     </div>
