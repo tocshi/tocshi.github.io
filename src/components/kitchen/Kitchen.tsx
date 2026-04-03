@@ -2,12 +2,22 @@ import React, { useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
 import "../../assets/styles/Kitchen.scss";
 
+interface Option {
+    readonly label: string;
+    readonly value: string;
+}
+
+const createOption = (label: string) => ({
+    label,
+    value: label.toLowerCase().replace(/\W/g, ""),
+});
+
 function Kitchen() {
     const [ingredients, setIngredients] = useState<string[]>(() => {
         const saved = localStorage.getItem("ingredients");
         return saved ? JSON.parse(saved) : [];
     });
-    const [addIngredientsInput, setAddIngredientsInput] = useState("");
+    const [value, setValue] = useState<Option[] | null>(null);
 
     // Save to localStorage whenever ingredients change
     useEffect(() => {
@@ -15,34 +25,36 @@ function Kitchen() {
         localStorage.setItem("ingredients", JSON.stringify(ingredients));
     }, [ingredients]);
 
-    const handleAddIngredient = () => {
-        if (addIngredientsInput.trim() !== "") {
-            setIngredients([...ingredients, addIngredientsInput.trim()]);
-            setAddIngredientsInput("");
+    const handleAddIngredient = (inputValue: string) => {
+        if (inputValue.trim() !== "") {
+            setIngredients([...ingredients, inputValue.trim()]);
+            setValue([...(value || []), createOption(inputValue.trim())]);
+        }
+    };
+
+    const handleDeleteIngredients = () => {
+        if (value && value.length > 0) {
+            const selectedValues = value.map((v) => v.value);
+            setIngredients(ingredients.filter((ing) => !selectedValues.includes(ing)));
+            setValue(null);
         }
     };
 
     return (
         <div id="kitchen">
             <div className="items-container">
-                <h1>Kitchen</h1>
+                <h1 id="ingredients">Ingredients</h1>
                 <div className="ingredients">
-                    <input
-                        type="text"
-                        value={addIngredientsInput}
-                        onChange={(e) => setAddIngredientsInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleAddIngredient()}
-                        placeholder="Enter ingredient..."
+                    <CreatableSelect
+                        isMulti
+                        options={ingredients.map((ing) => ({ value: ing, label: ing }))}
+                        onChange={(newValue) => setValue(newValue ? [...newValue] : null)}
+                        onCreateOption={handleAddIngredient}
+                        value={value}
                     />
-                    <button onClick={handleAddIngredient}>Add Ingredient</button>
-
-                    <ul>
-                        {ingredients.map((ing, i) => (
-                            <li key={i}>{ing}</li>
-                        ))}
-                    </ul>
-                    <CreatableSelect isMulti options={ingredients.map((ing) => ({ value: ing, label: ing }))} />
                 </div>
+                <button onClick={handleDeleteIngredients}>Delete Selected Ingredients</button>
+                <h1 id="recipes">Recipes</h1>
             </div>
         </div>
     );
