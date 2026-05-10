@@ -1,42 +1,158 @@
+p {
+    margin: 0;
+}
+
 .dark-mode .items-container {
     background-color: rgba(0, 0, 0, 0.2);
+    min-height: 100vh;
+    padding-top: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
-.vertical-timeline span {
-    color: white;
-    font-family: 'Courier Prime', monospace;
+.ingredients {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
 }
 
-.vertical-timeline p {
-    color: rgb(39, 40, 34);
+.ingredient-select {
+    z-index: 2;
 }
 
-.vertical-timeline-element p {
-    color: rgb(39, 40, 34);
+.items-container button {
+    width: fit-content;
+    background-color: #0d1116;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1.2em;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: rgb(39, 40, 34);
+        color: white;
+    }
+
+    &.danger {
+        border-color: rgb(200, 0, 0);
+        color: rgb(200, 0, 0);
+
+        &:hover {
+            background-color: rgb(200, 0, 0);
+            color: white;
+        }
+    }
+
+    &.success {
+        border-color: rgb(92, 124, 192);
+        color: rgb(92, 124, 192);
+
+        &:hover {
+            background-color: rgb(92, 124, 192);
+            color: white;
+        }
+    }
+
+    &.disabled {
+        border-color: rgb(87, 88, 82);
+        color: rgb(87, 88, 82);
+
+        &:hover {
+            background-color: #0d1116;
+            color: rgb(87, 88, 82);
+        }
+    }
 }
 
-.vertical-timeline-element h3 {
-    color: rgb(39, 40, 34);
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    width: 320px;
+    border: 2px solid #000;
+    background-color: #0d1116;
+    box-shadow: 24;
+    padding: 24px;
+    gap: 24px;
+
+    fieldset {
+        background-color: white;
+    }
+
+    .MuiInputLabel-shrink {
+        background-color: white;
+        padding: 0 5px;
+        border-radius: 3px;
+    }
+
+    .MuiOutlinedInput-input {
+        z-index: 1;
+    }
 }
 
-.vertical-timeline-element h4 {
-    color: rgb(39, 40, 34);
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+
+    button {
+        width: fit-content;
+        background-color: #0d1116;
+        border: 2px solid #fff;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 1.2em;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: rgb(87, 88, 82);
+            color: white;
+        }
+
+        &.danger {
+            border-color: rgb(200, 0, 0);
+            color: rgb(200, 0, 0);
+
+            &:hover {
+                background-color: rgb(200, 0, 0);
+                color: white;
+            }
+        }
+
+        &.success {
+            border-color: rgb(92, 124, 192);
+            color: rgb(92, 124, 192);
+
+            &:hover {
+                background-color: rgb(92, 124, 192);
+                color: white;
+            }
+        }
+
+        &.disabled {
+            border-color: rgb(87, 88, 82);
+            color: rgb(87, 88, 82);
+
+            &:hover {
+                background-color: #0d1116;
+                color: rgb(87, 88, 82);
+            }
+        }
+    }
 }
 
-.vertical-timeline-element span {
-    color: rgb(39, 40, 34);
-}
-
-.vertical-timeline-element .vertical-timeline-element-date {
-    color: white;
-}
-
-.svg-inline--fa {
-    color: white;
-}
-
-@media screen and (max-width: 1170px) {
-    .vertical-timeline-element .vertical-timeline-element-date {
-        color: rgb(39, 40, 34);
+@media screen and (max-width: 700px) {
+    .items-container button {
+        width: 100%;
     }
 }

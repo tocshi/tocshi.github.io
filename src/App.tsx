@@ -44,7 +44,7 @@ function App() {
                         path="/kitchen"
                         element={
                             <>
-                                <Navigation parentToChild={{ mode }} modeChange={handleModeChange} />
+                                {/* <Navigation parentToChild={{ mode }} modeChange={handleModeChange} /> DISABLED UNTIL LIGHT MODE IS IMPLEMENTED */}
                                 <FadeIn transitionDuration={700}>
                                     <Kitchen />
                                 </FadeIn>
