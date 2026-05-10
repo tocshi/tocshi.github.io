@@ -114,6 +114,7 @@ function Kitchen() {
                         value={selectedIngredients}
                     />
                     <TextField
+                        size="small"
                         required
                         id="outlined-required"
                         label="Recipe Name"
@@ -158,6 +159,7 @@ function Kitchen() {
                 <h1 id="ingredients">Ingredients</h1>
                 <div className="ingredients">
                     <CreatableSelect
+                        className="ingredient-select"
                         isMulti
                         options={ingredients.map((ing) => ({ value: ing, label: ing }))}
                         onChange={(newValue) => setSelectedIngredients(newValue ? [...newValue] : null)}

@@ -20,6 +20,10 @@ p {
 
 .ingredient-select {
     z-index: 2;
+
+    > div {
+        min-height: 40px;
+    }
 }
 
 .items-container button {
