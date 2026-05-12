@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
 import "../../assets/styles/Kitchen.scss";
-import { Modal, TextField } from "@mui/material";
+import {
+    Accordion,
+    AccordionActions,
+    AccordionDetails,
+    AccordionSummary,
+    Button,
+    Modal,
+    TextField,
+} from "@mui/material";
+import { Delete, Edit, ExpandMore } from "@mui/icons-material";
 
 interface Option {
     readonly label: string;
@@ -12,6 +21,7 @@ interface Recipe {
     name: string;
     tags: string[];
     ingredients: string[];
+    notes: string;
 }
 
 const createOption = (label: string) => ({
@@ -29,9 +39,17 @@ function Kitchen() {
         return saved ? JSON.parse(saved) : [];
     });
     const [selectedIngredients, setSelectedIngredients] = useState<Option[] | null>(null);
-    const [recipeName, setRecipeName] = useState<string>("");
+    const [recipeName, setRecipeName] = useState<string>(""); // Used for both creating and editing recipes, also set when editing a recipe
+    const [recipeNotes, setRecipeNotes] = useState<string>("");
+    const [recipeSearchName, setRecipeSearchName] = useState<string>("");
+    const [editRecipeSelectedIngredients, setEditRecipeSelectedIngredients] = useState<Option[] | null>(null);
+
+    const [expandedRecipe, setExpandedRecipe] = React.useState<string | false>(false);
+    const [isEditingRecipe, setEditingRecipe] = useState(false);
+
     const [isDeleteIngredientModalOpen, setDeleteIngredientModalOpen] = useState(false);
     const [isCreateRecipeModalOpen, setCreateRecipeModalOpen] = useState(false);
+    const [isDeleteRecipeModalOpen, setDeleteRecipeModalOpen] = useState(false);
 
     // Save to localStorage whenever ingredients, recipes, or tags change
     useEffect(() => {
@@ -51,9 +69,13 @@ function Kitchen() {
         }
     };
 
-    const handleAddRecipe = (name: string, tags: string[], ingredients: string[]) => {
+    const handleAddRecipe = (name: string, tags: string[], ingredients: string[], notes: string) => {
         if (name.trim() !== "" && ingredients.length > 0) {
-            setRecipes([...recipes, { name: name.trim(), tags, ingredients }]);
+            setRecipes(
+                [...recipes, { name: name.trim(), tags, ingredients, notes }].sort((a, b) =>
+                    a.name.localeCompare(b.name),
+                ),
+            );
         }
     };
 
@@ -64,8 +86,11 @@ function Kitchen() {
     };
 
     const openCreateRecipeModal = () => {
-        if (selectedIngredients && selectedIngredients.length > 0) {
+        if (isEditingRecipe) {
             setCreateRecipeModalOpen(true);
+        } else if (selectedIngredients && selectedIngredients.length > 0) {
+            setCreateRecipeModalOpen(true);
+            setRecipeName("");
         }
     };
 
@@ -87,6 +112,25 @@ function Kitchen() {
         }
     };
 
+    const handleDeleteRecipe = (name: string = expandedRecipe as string) => {
+        setRecipes(recipes.filter((recipe) => recipe.name !== name));
+        console.log("Deleted recipe:", name);
+        console.log(recipes);
+
+        setDeleteRecipeModalOpen(false);
+    };
+
+    const handleExpandRecipe = (recipePanel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+        setExpandedRecipe(isExpanded ? recipePanel : false);
+    };
+
+    const getExpandedRecipe = () => {
+        if (expandedRecipe) {
+            return recipes.find((recipe) => recipe.name === expandedRecipe);
+        }
+        return null;
+    };
+
     return (
         <div id="kitchen">
             <Modal open={isDeleteIngredientModalOpen} onClose={() => setDeleteIngredientModalOpen(false)}>
@@ -94,24 +138,42 @@ function Kitchen() {
                     <p>Are you sure you want to delete the selected ingredients?</p>
                     <p>This will also remove them from any existing recipes.</p>
                     <div className="modal-buttons">
-                        <button onClick={() => setDeleteIngredientModalOpen(false)}>Cancel</button>
-                        <button className="danger" onClick={handleDeleteIngredients}>
+                        <Button onClick={() => setDeleteIngredientModalOpen(false)}>Cancel</Button>
+                        <Button className="danger" onClick={handleDeleteIngredients}>
                             Delete
-                        </button>
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal open={isDeleteRecipeModalOpen} onClose={() => setDeleteRecipeModalOpen(false)}>
+                <div className="modal-content">
+                    <p>Are you sure you want to delete the recipe: {expandedRecipe}?</p>
+                    <p>This cannot be undone!</p>
+                    <div className="modal-buttons">
+                        <Button onClick={() => setDeleteRecipeModalOpen(false)}>Cancel</Button>
+                        <Button className="danger" onClick={() => handleDeleteRecipe(expandedRecipe as string)}>
+                            Delete
+                        </Button>
                     </div>
                 </div>
             </Modal>
 
             <Modal open={isCreateRecipeModalOpen} onClose={() => setCreateRecipeModalOpen(false)}>
                 <div className="modal-content">
-                    <p>Create a recipe with the following ingredients:</p>
+                    <p>{isEditingRecipe ? "Edit the recipe:" : "Create a recipe with the following ingredients:"}</p>
                     <CreatableSelect
                         className="ingredient-select"
                         isMulti
                         options={ingredients.map((ing) => ({ value: ing, label: ing }))}
-                        onChange={(newValue) => setSelectedIngredients(newValue ? [...newValue] : null)}
+                        onChange={(newValue) => {
+                            //setExpandedRecipe(false); // TODO: fix this behaviour
+                            isEditingRecipe
+                                ? setEditRecipeSelectedIngredients(newValue ? [...newValue] : null)
+                                : setSelectedIngredients(newValue ? [...newValue] : null);
+                        }}
                         onCreateOption={handleAddIngredient}
-                        value={selectedIngredients}
+                        value={isEditingRecipe ? editRecipeSelectedIngredients : selectedIngredients}
                     />
                     <TextField
                         size="small"
@@ -124,33 +186,80 @@ function Kitchen() {
                             setRecipeName(e.target.value);
                         }}
                     />
+                    <TextField
+                        size="small"
+                        multiline
+                        minRows={3}
+                        id="outlined-textarea"
+                        label="Notes"
+                        placeholder="Additional notes for the recipe (optional)"
+                        value={recipeNotes}
+                        onChange={(e) => {
+                            setRecipeNotes(e.target.value);
+                        }}
+                    />
                     <div className="modal-buttons">
-                        <button
+                        <Button
                             onClick={() => {
                                 setCreateRecipeModalOpen(false);
                                 setRecipeName("");
                             }}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             className={
                                 "success" +
-                                (selectedIngredients && selectedIngredients.length > 0 && recipeName.trim() !== ""
+                                ((!isEditingRecipe && selectedIngredients && selectedIngredients.length > 0) ||
+                                (isEditingRecipe &&
+                                    editRecipeSelectedIngredients &&
+                                    editRecipeSelectedIngredients.length > 0 &&
+                                    recipeName.trim() !== "")
                                     ? ""
                                     : " disabled")
                             }
                             onClick={() => {
-                                if (selectedIngredients && selectedIngredients.length > 0) {
-                                    const selectedValues = selectedIngredients.map((v) => v.value);
-                                    handleAddRecipe(recipeName, [], selectedValues);
+                                if (
+                                    (isEditingRecipe &&
+                                        editRecipeSelectedIngredients &&
+                                        editRecipeSelectedIngredients.length > 0) ||
+                                    (!isEditingRecipe && selectedIngredients && selectedIngredients.length > 0)
+                                ) {
+                                    const selectedValues = isEditingRecipe
+                                        ? editRecipeSelectedIngredients!.map((v) => v.value)
+                                        : selectedIngredients!.map((v) => v.value);
+
+                                    if (isEditingRecipe) {
+                                        console.log("deleting from edit");
+                                        // Delete old recipe and add new one in a single state update
+                                        setRecipes(
+                                            recipes
+                                                .filter((recipe) => recipe.name !== expandedRecipe)
+                                                .concat([
+                                                    {
+                                                        name: recipeName,
+                                                        tags: [],
+                                                        ingredients: selectedValues,
+                                                        notes: recipeNotes,
+                                                    },
+                                                ])
+                                                .sort((a, b) => a.name.localeCompare(b.name)),
+                                        );
+                                        setExpandedRecipe(recipeName);
+                                        setEditingRecipe(false);
+                                    } else {
+                                        handleAddRecipe(recipeName, [], selectedValues, recipeNotes);
+                                    }
+
                                     setRecipeName("");
+                                    setRecipeNotes("");
+                                    setEditRecipeSelectedIngredients(null);
                                     setCreateRecipeModalOpen(false);
                                 }
                             }}
                         >
                             Confirm
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -166,24 +275,104 @@ function Kitchen() {
                         onCreateOption={handleAddIngredient}
                         value={selectedIngredients}
                     />
-                    <button
-                        className={
-                            "success" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
-                        }
-                        onClick={openCreateRecipeModal}
-                    >
-                        Create Recipe
-                    </button>
-                    <button
-                        className={
-                            "danger" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
-                        }
-                        onClick={openDeleteIngredientModal}
-                    >
-                        Delete Selected Ingredients
-                    </button>
+                    <div className="ingredients-buttons">
+                        <Button
+                            className={
+                                "success" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
+                            }
+                            onClick={openCreateRecipeModal}
+                        >
+                            Create Recipe
+                        </Button>
+                        <Button
+                            className={
+                                "danger" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
+                            }
+                            onClick={openDeleteIngredientModal}
+                        >
+                            Delete Selected Ingredients
+                        </Button>
+                    </div>
                 </div>
                 <h1 id="recipes">Recipes</h1>
+                <div className="recipes">
+                    <TextField
+                        disabled={recipes.length === 0}
+                        className={recipes.length === 0 ? " disabled" : ""}
+                        size="small"
+                        id="recipe-search"
+                        label="Search Recipes"
+                        placeholder="Filter recipes by name..."
+                        value={recipeSearchName}
+                        onChange={(e) => {
+                            setRecipeSearchName(e.target.value);
+                        }}
+                    />
+                    {recipes.length === 0 ? (
+                        <p>No recipes yet. Create one by selecting ingredients above!</p>
+                    ) : (
+                        recipes
+                            .filter((recipe) =>
+                                selectedIngredients && selectedIngredients.length > 0
+                                    ? recipe.ingredients.every((ing) =>
+                                          selectedIngredients?.some((sel) => sel.value === ing),
+                                      )
+                                    : true,
+                            )
+                            .filter((recipe) => recipe.name.toLowerCase().includes(recipeSearchName.toLowerCase()))
+                            .map((recipe) => (
+                                <Accordion
+                                    expanded={expandedRecipe === recipe.name}
+                                    onChange={handleExpandRecipe(recipe.name)}
+                                >
+                                    <AccordionSummary expandIcon={<ExpandMore />}>
+                                        <h3>{recipe.name}</h3>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        Ingredients:
+                                        <ul>
+                                            {recipe.ingredients.map((ing, index) => (
+                                                <li key={index}>{ing}</li>
+                                            ))}
+                                        </ul>
+                                        {recipe.notes && (
+                                            <div style={{ whiteSpace: "pre-line" }}>
+                                                Notes:<br></br>
+                                                {recipe.notes}
+                                            </div>
+                                        )}
+                                    </AccordionDetails>
+                                    <AccordionActions>
+                                        <Button
+                                            variant="text"
+                                            onClick={() => {
+                                                setEditingRecipe(true);
+                                                setRecipeName(expandedRecipe as string);
+                                                setRecipeNotes(getExpandedRecipe()?.notes || "");
+                                                setEditRecipeSelectedIngredients(
+                                                    ingredients
+                                                        .filter((ing) => getExpandedRecipe()?.ingredients.includes(ing))
+                                                        .map((ing) => createOption(ing)),
+                                                );
+                                                openCreateRecipeModal();
+                                            }}
+                                        >
+                                            <Edit />
+                                        </Button>
+                                        <Button
+                                            variant="text"
+                                            color="error"
+                                            onClick={() => {
+                                                setDeleteRecipeModalOpen(true);
+                                            }}
+                                        >
+                                            <Delete />
+                                        </Button>
+                                    </AccordionActions>
+                                </Accordion>
+                            ))
+                    )}
+                </div>
             </div>
         </div>
     );
