@@ -1,0 +1,227 @@
+p {
+    margin: 0;
+}
+
+.dark-mode .items-container {
+    background-color: rgba(0, 0, 0, 0.2);
+    min-height: calc(100vh - 5% - 56px);
+    padding-top: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    > div,
+    > h1 {
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.ingredients {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ingredients-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.recipes {
+    display: flex;
+    flex-direction: column;
+
+    .MuiAccordionSummary-content h3 {
+        margin: 0;
+        color: rgba(0, 0, 0, 0.87);
+    }
+
+    .MuiAccordionActions-root {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .MuiInputBase-root {
+        margin-bottom: 20px;
+    }
+
+    fieldset {
+        background-color: #fff;
+    }
+
+    .MuiInputLabel-shrink {
+        background-color: #fff;
+        padding: 0 5px;
+        border-radius: 3px;
+    }
+
+    .MuiOutlinedInput-input {
+        z-index: 1;
+    }
+
+    .disabled {
+        fieldset {
+            background-color: #aaa;
+            color: #666;
+        }
+    }
+}
+
+.ingredient-select {
+    z-index: 2;
+
+    > div {
+        min-height: 40px;
+    }
+}
+
+.items-container .ingredients > .ingredients-buttons > button {
+    width: fit-content;
+    height: 48px;
+    text-transform: none;
+    background-color: #0d1116;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1.2em;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: rgb(39, 40, 34);
+        color: #fff;
+    }
+
+    &.danger {
+        border-color: rgb(200, 0, 0);
+        color: rgb(200, 0, 0);
+
+        &:hover {
+            background-color: rgb(200, 0, 0);
+            color: #fff;
+        }
+    }
+
+    &.success {
+        border-color: rgb(92, 124, 192);
+        color: rgb(92, 124, 192);
+
+        &:hover {
+            background-color: rgb(92, 124, 192);
+            color: #fff;
+        }
+    }
+
+    &.disabled {
+        border-color: rgb(87, 88, 82);
+        color: rgb(87, 88, 82);
+
+        &:hover {
+            background-color: #0d1116;
+            color: rgb(87, 88, 82);
+        }
+    }
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    width: 320px;
+    border: 2px solid #000;
+    background-color: #0d1116;
+    box-shadow: 24;
+    padding: 24px;
+    gap: 24px;
+
+    fieldset {
+        background-color: #fff;
+    }
+
+    .MuiInputLabel-shrink {
+        background-color: #fff;
+        padding: 0 5px;
+        border-radius: 3px;
+    }
+
+    .MuiOutlinedInput-input {
+        z-index: 1;
+    }
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+
+    button {
+        width: 40%;
+        height: 48px;
+        text-transform: none;
+        background-color: #0d1116;
+        border: 2px solid #fff;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 1.2em;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: rgb(87, 88, 82);
+            color: #fff;
+        }
+
+        &.danger {
+            border-color: rgb(200, 0, 0);
+            color: rgb(200, 0, 0);
+
+            &:hover {
+                background-color: rgb(200, 0, 0);
+                color: #fff;
+            }
+        }
+
+        &.success {
+            border-color: rgb(92, 124, 192);
+            color: rgb(92, 124, 192);
+
+            &:hover {
+                background-color: rgb(92, 124, 192);
+                color: #fff;
+            }
+        }
+
+        &.disabled {
+            border-color: rgb(87, 88, 82);
+            color: rgb(87, 88, 82);
+
+            &:hover {
+                background-color: #0d1116;
+                color: rgb(87, 88, 82);
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .items-container > div,
+    .items-container > h1 {
+        width: 100% !important;
+    }
+}
+
+@media screen and (max-width: 1333px) {
+    .items-container .ingredients > .ingredients-buttons > button {
+        width: 100% !important;
+    }
+}
