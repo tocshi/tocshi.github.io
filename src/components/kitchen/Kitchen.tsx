@@ -7,10 +7,11 @@ import {
     AccordionDetails,
     AccordionSummary,
     Button,
+    IconButton,
     Modal,
     TextField,
 } from "@mui/material";
-import { Delete, Edit, ExpandMore } from "@mui/icons-material";
+import { Delete, Edit, ExpandMore, QuestionMark } from "@mui/icons-material";
 
 interface Option {
     readonly label: string;
@@ -52,6 +53,7 @@ function Kitchen({ parentToChild }: any) {
     const [isDeleteIngredientModalOpen, setDeleteIngredientModalOpen] = useState(false);
     const [isCreateRecipeModalOpen, setCreateRecipeModalOpen] = useState(false);
     const [isDeleteRecipeModalOpen, setDeleteRecipeModalOpen] = useState(false);
+    const [isHelpModalOpen, setHelpModalOpen] = useState(false);
 
     // Save to localStorage whenever ingredients, recipes, or tags change
     useEffect(() => {
@@ -144,6 +146,25 @@ function Kitchen({ parentToChild }: any) {
 
     return (
         <div id="kitchen">
+            <Modal open={isHelpModalOpen} onClose={() => setHelpModalOpen(false)}>
+                <div className={`modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
+                    <h2>Getting Started</h2>
+                    <p>
+                        Start typing in the ingredients search box to add a new ingredient, or select an ingredient you
+                        previously added. When you have added all the ingredients you want, click the "Create Recipe"
+                        button to save your new recipe.
+                    </p>
+                    <p>
+                        Created recipes will appear in the "Recipes" section, where you can click on them to expand and
+                        view their details.
+                    </p>
+                    <p>
+                        You can filter recipes by name using the search box in the "Recipes" section, or by selecting
+                        ingredients. Only recipes that can be made with the selected ingredients will be shown.
+                    </p>
+                </div>
+            </Modal>
+
             <Modal open={isDeleteIngredientModalOpen} onClose={() => setDeleteIngredientModalOpen(false)}>
                 <div className={`modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
                     <p>Are you sure you want to delete the selected ingredients?</p>
@@ -286,7 +307,12 @@ function Kitchen({ parentToChild }: any) {
             </Modal>
 
             <div className="items-container">
-                <h1 id="ingredients">Ingredients</h1>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <h1 id="ingredients">Ingredients</h1>
+                    <IconButton className="icon-button" onClick={() => setHelpModalOpen(true)}>
+                        <QuestionMark />
+                    </IconButton>
+                </div>
                 <div className="ingredients">
                     <CreatableSelect
                         className="ingredient-select"
