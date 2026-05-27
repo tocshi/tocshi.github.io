@@ -29,7 +29,9 @@ const createOption = (label: string) => ({
     value: label.toLowerCase().replace(/\W/g, ""),
 });
 
-function Kitchen() {
+function Kitchen({ parentToChild }: any) {
+    const { mode } = parentToChild;
+
     const [ingredients, setIngredients] = useState<string[]>(() => {
         const saved = localStorage.getItem("ingredients");
         return saved ? JSON.parse(saved) : [];
@@ -65,7 +67,14 @@ function Kitchen() {
     const handleAddIngredient = (inputValue: string) => {
         if (inputValue.trim() !== "") {
             setIngredients([...ingredients, inputValue.trim()].sort((a, b) => a.localeCompare(b)));
-            setSelectedIngredients([...(selectedIngredients || []), createOption(inputValue.trim())]);
+            if (isEditingRecipe) {
+                setEditRecipeSelectedIngredients([
+                    ...(editRecipeSelectedIngredients || []),
+                    createOption(inputValue.trim()),
+                ]);
+            } else {
+                setSelectedIngredients([...(selectedIngredients || []), createOption(inputValue.trim())]);
+            }
         }
     };
 
@@ -85,12 +94,14 @@ function Kitchen() {
         }
     };
 
-    const openCreateRecipeModal = () => {
-        if (isEditingRecipe) {
+    // This needs its own isEditing variable since the isEditingRecipe state isn't set until the edit button in the recipe accordion is clicked
+    const openCreateRecipeModal = (isEditing = false) => {
+        if (isEditing) {
             setCreateRecipeModalOpen(true);
         } else if (selectedIngredients && selectedIngredients.length > 0) {
             setCreateRecipeModalOpen(true);
             setRecipeName("");
+            setRecipeNotes("");
         }
     };
 
@@ -134,7 +145,7 @@ function Kitchen() {
     return (
         <div id="kitchen">
             <Modal open={isDeleteIngredientModalOpen} onClose={() => setDeleteIngredientModalOpen(false)}>
-                <div className="modal-content">
+                <div className={`modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
                     <p>Are you sure you want to delete the selected ingredients?</p>
                     <p>This will also remove them from any existing recipes.</p>
                     <div className="modal-buttons">
@@ -147,7 +158,7 @@ function Kitchen() {
             </Modal>
 
             <Modal open={isDeleteRecipeModalOpen} onClose={() => setDeleteRecipeModalOpen(false)}>
-                <div className="modal-content">
+                <div className={`modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
                     <p>Are you sure you want to delete the recipe: {expandedRecipe}?</p>
                     <p>This cannot be undone!</p>
                     <div className="modal-buttons">
@@ -160,12 +171,14 @@ function Kitchen() {
             </Modal>
 
             <Modal open={isCreateRecipeModalOpen} onClose={() => setCreateRecipeModalOpen(false)}>
-                <div className="modal-content">
+                <div className={`modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
                     <p>{isEditingRecipe ? "Edit the recipe:" : "Create a recipe with the following ingredients:"}</p>
                     <CreatableSelect
                         className="ingredient-select"
                         isMulti
                         options={ingredients.map((ing) => ({ value: ing, label: ing }))}
+                        placeholder="Select ingredients..."
+                        noOptionsMessage={() => "Type to add new ingredients"}
                         onChange={(newValue) => {
                             //setExpandedRecipe(false); // TODO: fix this behaviour
                             isEditingRecipe
@@ -203,24 +216,32 @@ function Kitchen() {
                             onClick={() => {
                                 setCreateRecipeModalOpen(false);
                                 setRecipeName("");
+                                setRecipeNotes("");
+                                if (isEditingRecipe) {
+                                    setEditingRecipe(false);
+                                    setEditRecipeSelectedIngredients(null);
+                                }
                             }}
                         >
                             Cancel
                         </Button>
                         <Button
                             className={
-                                "success" +
-                                ((!isEditingRecipe && selectedIngredients && selectedIngredients.length > 0) ||
+                                (!isEditingRecipe &&
+                                    selectedIngredients &&
+                                    selectedIngredients.length > 0 &&
+                                    recipeName.trim() !== "") ||
                                 (isEditingRecipe &&
                                     editRecipeSelectedIngredients &&
                                     editRecipeSelectedIngredients.length > 0 &&
                                     recipeName.trim() !== "")
-                                    ? ""
-                                    : " disabled")
+                                    ? "success"
+                                    : "disabled"
                             }
                             onClick={() => {
                                 if (
                                     (isEditingRecipe &&
+                                        recipeName.trim() !== "" &&
                                         editRecipeSelectedIngredients &&
                                         editRecipeSelectedIngredients.length > 0) ||
                                     (!isEditingRecipe && selectedIngredients && selectedIngredients.length > 0)
@@ -270,6 +291,8 @@ function Kitchen() {
                     <CreatableSelect
                         className="ingredient-select"
                         isMulti
+                        placeholder="Select or add ingredients..."
+                        noOptionsMessage={() => "Type to add new ingredients"}
                         options={ingredients.map((ing) => ({ value: ing, label: ing }))}
                         onChange={(newValue) => setSelectedIngredients(newValue ? [...newValue] : null)}
                         onCreateOption={handleAddIngredient}
@@ -280,7 +303,7 @@ function Kitchen() {
                             className={
                                 "success" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
                             }
-                            onClick={openCreateRecipeModal}
+                            onClick={() => openCreateRecipeModal(false)}
                         >
                             Create Recipe
                         </Button>
@@ -354,7 +377,7 @@ function Kitchen() {
                                                         .filter((ing) => getExpandedRecipe()?.ingredients.includes(ing))
                                                         .map((ing) => createOption(ing)),
                                                 );
-                                                openCreateRecipeModal();
+                                                openCreateRecipeModal(true);
                                             }}
                                         >
                                             <Edit />

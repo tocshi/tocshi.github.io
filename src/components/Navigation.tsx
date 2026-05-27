@@ -17,13 +17,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 
 const drawerWidth = 240;
-const navItems = [
-    ["Expertise", "expertise"],
-    ["History", "history"],
-    ["Projects", "projects"],
-    ["Contact", "contact"],
-];
-const test = () => {
+const navItems = () => {
     switch (window.location.pathname) {
         case "/":
             return [
@@ -82,7 +76,7 @@ function Navigation({ parentToChild, modeChange }: any) {
             </p>
             <Divider />
             <List>
-                {navItems.map((item) => (
+                {navItems().map((item) => (
                     <ListItem key={item[0]} disablePadding>
                         <ListItemButton sx={{ textAlign: "center" }} onClick={() => scrollToSection(item[1])}>
                             <ListItemText primary={item[0]} />
@@ -98,27 +92,33 @@ function Navigation({ parentToChild, modeChange }: any) {
             <CssBaseline />
             <AppBar component="nav" id="navigation" className={`navbar-fixed-top${scrolled ? " scrolled" : ""}`}>
                 <Toolbar className="navigation-bar">
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        edge="start"
-                        onClick={handleDrawerToggle}
-                        sx={{ mr: 2, display: { sm: "none" } }}
-                    >
-                        <MenuIcon />
-                    </IconButton>
+                    {navItems().length > 0 ? (
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="start"
+                            onClick={handleDrawerToggle}
+                            sx={{ mr: 2, display: { sm: "none" } }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    ) : (
+                        <div /> // Placeholder to maintain spacing when no nav items are present
+                    )}
                     {mode === "dark" ? (
                         <LightModeIcon onClick={() => modeChange()} />
                     ) : (
                         <DarkModeIcon onClick={() => modeChange()} />
                     )}
-                    <Box sx={{ display: { xs: "none", sm: "block" } }}>
-                        {test().map((item) => (
-                            <Button key={item[0]} onClick={() => scrollToSection(item[1])} sx={{ color: "#fff" }}>
-                                {item[0]}
-                            </Button>
-                        ))}
-                    </Box>
+                    {navItems().length > 0 && (
+                        <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                            {navItems().map((item) => (
+                                <Button key={item[0]} onClick={() => scrollToSection(item[1])} sx={{ color: "#fff" }}>
+                                    {item[0]}
+                                </Button>
+                            ))}
+                        </Box>
+                    )}
                 </Toolbar>
             </AppBar>
             <nav>

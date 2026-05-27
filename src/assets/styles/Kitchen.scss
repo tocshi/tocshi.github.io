@@ -4,7 +4,10 @@ p {
 
 .dark-mode .items-container {
     background-color: rgba(0, 0, 0, 0.2);
-    min-height: calc(100vh - 5% - 56px);
+}
+
+.items-container {
+    min-height: 100vh;
     padding-top: 56px;
     display: flex;
     flex-direction: column;
@@ -66,8 +69,8 @@ p {
 
     .disabled {
         fieldset {
-            background-color: #aaa;
-            color: #666;
+            background-color: #ccc;
+            color: #777;
         }
     }
 }
@@ -80,21 +83,56 @@ p {
     }
 }
 
-.items-container .ingredients > .ingredients-buttons > button {
-    width: fit-content;
-    height: 48px;
-    text-transform: none;
+.dark-mode .items-container .ingredients > .ingredients-buttons > button,
+.dark-mode .modal-buttons > button {
     background-color: #0d1116;
     border: 2px solid #fff;
-    border-radius: 4px;
     color: #fff;
-    font-size: 1.2em;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
 
     &:hover {
-        background-color: rgb(39, 40, 34);
+        background-color: #fff;
+        color: #0d1116;
+    }
+
+    &.danger {
+        border-color: rgb(200, 0, 0);
+        color: rgb(200, 0, 0);
+
+        &:hover {
+            background-color: rgb(200, 0, 0);
+            color: #fff;
+        }
+    }
+
+    &.success {
+        border-color: rgb(92, 124, 192);
+        color: rgb(92, 124, 192);
+
+        &:hover {
+            background-color: rgb(92, 124, 192);
+            color: #fff;
+        }
+    }
+
+    &.disabled {
+        border-color: #777;
+        color: #777;
+
+        &:hover {
+            background-color: #0d1116;
+            color: #777;
+        }
+    }
+}
+
+.light-mode .items-container .ingredients > .ingredients-buttons > button,
+.light-mode .modal-buttons > button {
+    background-color: #f8f9fa;
+    border: 2px solid #0d1116;
+    color: #0d1116;
+
+    &:hover {
+        background-color: #0d1116;
         color: #fff;
     }
 
@@ -119,14 +157,35 @@ p {
     }
 
     &.disabled {
-        border-color: rgb(87, 88, 82);
-        color: rgb(87, 88, 82);
+        border-color: #777;
+        color: #777;
 
         &:hover {
-            background-color: #0d1116;
-            color: rgb(87, 88, 82);
+            background-color: #f8f9fa;
+            color: #777;
         }
     }
+}
+
+.items-container .ingredients > .ingredients-buttons > button {
+    width: fit-content;
+    height: 48px;
+    text-transform: none;
+    border-radius: 4px;
+    font-size: 1.2em;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark-mode.modal-content {
+    border: 2px solid #000;
+    background-color: #0d1116;
+}
+
+.light-mode.modal-content {
+    border: 2px solid #0d1116;
+    background-color: #f8f9fa;
 }
 
 .modal-content {
@@ -138,9 +197,7 @@ p {
     flex-direction: column;
     border-radius: 8px;
     width: 320px;
-    border: 2px solid #000;
-    background-color: #0d1116;
-    box-shadow: 24;
+    box-shadow: 24px 24px 48px rgba(0, 0, 0, 0.2);
     padding: 24px;
     gap: 24px;
 
@@ -167,49 +224,11 @@ p {
         width: 40%;
         height: 48px;
         text-transform: none;
-        background-color: #0d1116;
-        border: 2px solid #fff;
         border-radius: 4px;
-        color: #fff;
         font-size: 1.2em;
         padding: 10px 20px;
         cursor: pointer;
         transition: all 0.3s ease;
-
-        &:hover {
-            background-color: rgb(87, 88, 82);
-            color: #fff;
-        }
-
-        &.danger {
-            border-color: rgb(200, 0, 0);
-            color: rgb(200, 0, 0);
-
-            &:hover {
-                background-color: rgb(200, 0, 0);
-                color: #fff;
-            }
-        }
-
-        &.success {
-            border-color: rgb(92, 124, 192);
-            color: rgb(92, 124, 192);
-
-            &:hover {
-                background-color: rgb(92, 124, 192);
-                color: #fff;
-            }
-        }
-
-        &.disabled {
-            border-color: rgb(87, 88, 82);
-            color: rgb(87, 88, 82);
-
-            &:hover {
-                background-color: #0d1116;
-                color: rgb(87, 88, 82);
-            }
-        }
     }
 }
 
