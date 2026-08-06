@@ -3,6 +3,7 @@ import castle0 from "../assets/images/Castle0.png";
 import castle1 from "../assets/images/Castle1.png";
 import castle2 from "../assets/images/Castle2.png";
 import castle3 from "../assets/images/Castle3.png";
+import kitchenproject from "../assets/images/kitchenproject.png";
 import "../assets/styles/Project.scss";
 
 function Project() {
@@ -10,6 +11,20 @@ function Project() {
         <div className="projects-container" id="projects">
             <h1>Projects</h1>
             <div className="projects-grid">
+                <div className="project">
+                    <a href="https://tocshi.github.io/kitchen" target="_blank" rel="noreferrer">
+                        <img src={kitchenproject} className="zoom" alt="thumbnail" width="100%" />
+                    </a>
+                    <a href="https://tocshi.github.io/kitchen" target="_blank" rel="noreferrer">
+                        <h2>Ingredient and Recipe Organizer</h2>
+                    </a>
+                    <p>
+                        A fully front-end web application I made using TypeScript and React, featuring a clean and
+                        simple user interface that works on both desktop and mobile devices. The application allows
+                        users to add ingredients and recipes, and then filter through them to find recipes that can be
+                        made with the ingredients they have on hand.
+                    </p>
+                </div>
                 <div className="project">
                     <a href="https://tocshi.itch.io/life-of-saca" target="_blank" rel="noreferrer">
                         <img src={lifeofsaca} className="zoom" alt="thumbnail" width="100%" />
