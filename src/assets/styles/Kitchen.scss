@@ -83,6 +83,14 @@ p {
     }
 }
 
+.dark-mode .icon-button {
+    color: #fff;
+}
+
+.light-mode .icon-button {
+    color: #0d1116;
+}
+
 .dark-mode .items-container .ingredients > .ingredients-buttons > button,
 .dark-mode .modal-buttons > button {
     background-color: #0d1116;
@@ -213,6 +221,10 @@ p {
 
     .MuiOutlinedInput-input {
         z-index: 1;
+    }
+
+    h2 {
+        margin: 0;
     }
 }
 
