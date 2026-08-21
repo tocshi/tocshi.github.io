@@ -267,9 +267,9 @@ function Kitchen({ parentToChild }: any) {
                                         editRecipeSelectedIngredients.length > 0) ||
                                     (!isEditingRecipe && selectedIngredients && selectedIngredients.length > 0)
                                 ) {
-                                    const selectedValues = isEditingRecipe
-                                        ? editRecipeSelectedIngredients!.map((v) => v.value)
-                                        : selectedIngredients!.map((v) => v.value);
+                                    const selectedOptions = isEditingRecipe
+                                        ? editRecipeSelectedIngredients!.map((v) => v.label)
+                                        : selectedIngredients!.map((v) => v.label);
 
                                     if (isEditingRecipe) {
                                         console.log("deleting from edit");
@@ -281,7 +281,7 @@ function Kitchen({ parentToChild }: any) {
                                                     {
                                                         name: recipeName,
                                                         tags: [],
-                                                        ingredients: selectedValues,
+                                                        ingredients: selectedOptions,
                                                         notes: recipeNotes,
                                                     },
                                                 ])
@@ -290,7 +290,7 @@ function Kitchen({ parentToChild }: any) {
                                         setExpandedRecipe(recipeName);
                                         setEditingRecipe(false);
                                     } else {
-                                        handleAddRecipe(recipeName, [], selectedValues, recipeNotes);
+                                        handleAddRecipe(recipeName, [], selectedOptions, recipeNotes);
                                     }
 
                                     setRecipeName("");
@@ -364,7 +364,7 @@ function Kitchen({ parentToChild }: any) {
                             .filter((recipe) =>
                                 selectedIngredients && selectedIngredients.length > 0
                                     ? recipe.ingredients.every((ing) =>
-                                          selectedIngredients?.some((sel) => sel.value === ing),
+                                          selectedIngredients?.some((sel) => sel.label === ing),
                                       )
                                     : true,
                             )

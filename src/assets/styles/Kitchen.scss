@@ -204,7 +204,7 @@ p {
     display: flex;
     flex-direction: column;
     border-radius: 8px;
-    width: 320px;
+    width: calc(40% - 48px);
     box-shadow: 24px 24px 48px rgba(0, 0, 0, 0.2);
     padding: 24px;
     gap: 24px;
@@ -241,6 +241,12 @@ p {
         padding: 10px 20px;
         cursor: pointer;
         transition: all 0.3s ease;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .modal-content {
+        width: 320px;
     }
 }
 
