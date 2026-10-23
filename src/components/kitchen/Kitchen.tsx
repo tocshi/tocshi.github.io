@@ -11,7 +11,7 @@ import {
     Modal,
     TextField,
 } from "@mui/material";
-import { Delete, Edit, ExpandMore, QuestionMark } from "@mui/icons-material";
+import { Delete, Edit, ExpandMore, QuestionMark, Shuffle } from "@mui/icons-material";
 
 interface Option {
     readonly label: string;
@@ -60,6 +60,7 @@ function Kitchen({ parentToChild }: any) {
     const [isDeleteRecipeModalOpen, setDeleteRecipeModalOpen] = useState(false);
     const [isHelpModalOpen, setHelpModalOpen] = useState(false);
     const [isEditTagsModalOpen, setEditTagsModalOpen] = useState(false);
+    const [randomRecipe, setRandomRecipe] = useState<Recipe | null>(null);
 
     // Save to localStorage whenever ingredients, recipes, or tags change
     useEffect(() => {
@@ -155,6 +156,14 @@ function Kitchen({ parentToChild }: any) {
         return null;
     };
 
+    const filteredRecipes = recipes
+        .filter((recipe) =>
+            selectedIngredients && selectedIngredients.length > 0
+                ? recipe.ingredients.every((ing) => selectedIngredients.some((sel) => sel.label === ing))
+                : true,
+        )
+        .filter((recipe) => recipe.name.toLowerCase().includes(recipeSearchName.toLowerCase()));
+
     return (
         <div id="kitchen">
             <Modal open={isHelpModalOpen} onClose={() => setHelpModalOpen(false)}>
@@ -173,6 +182,32 @@ function Kitchen({ parentToChild }: any) {
                         You can filter recipes by name using the search box in the "Recipes" section, or by selecting
                         ingredients. Only recipes that can be made with the selected ingredients will be shown.
                     </p>
+                </div>
+            </Modal>
+
+            <Modal open={randomRecipe !== null} onClose={() => setRandomRecipe(null)}>
+                <div className={`modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
+                    {randomRecipe && (
+                        <>
+                            <h2>{randomRecipe.name}</h2>
+                            <div className="recipe-details">
+                                <div>
+                                    Ingredients:
+                                    <ul>
+                                        {randomRecipe.ingredients.map((ing, index) => (
+                                            <li key={index}>{ing}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                {randomRecipe.notes && (
+                                    <div style={{ whiteSpace: "pre-line" }}>
+                                        Notes:<br></br>
+                                        {randomRecipe.notes}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </Modal>
 
@@ -258,6 +293,7 @@ function Kitchen({ parentToChild }: any) {
                             Cancel
                         </Button>
                         <Button
+                            id="confirm-create-recipe-button"
                             className={
                                 (!isEditingRecipe &&
                                     selectedIngredients &&
@@ -320,7 +356,7 @@ function Kitchen({ parentToChild }: any) {
             <div className="items-container">
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <h1 id="ingredients">Ingredients</h1>
-                    <IconButton className="icon-button" onClick={() => setHelpModalOpen(true)}>
+                    <IconButton id="help-button" className="icon-button" onClick={() => setHelpModalOpen(true)}>
                         <QuestionMark />
                     </IconButton>
                 </div>
@@ -337,6 +373,7 @@ function Kitchen({ parentToChild }: any) {
                     />
                     <div className="ingredients-buttons">
                         <Button
+                            id="create-recipe-button"
                             className={
                                 "success" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
                             }
@@ -345,6 +382,7 @@ function Kitchen({ parentToChild }: any) {
                             Create Recipe
                         </Button>
                         <Button
+                            id="delete-ingredient-button"
                             className={
                                 "danger" + (selectedIngredients && selectedIngredients.length > 0 ? "" : " disabled")
                             }
@@ -354,7 +392,22 @@ function Kitchen({ parentToChild }: any) {
                         </Button>
                     </div>
                 </div>
-                <h1 id="recipes">Recipes</h1>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <h1 id="recipes">Recipes</h1>
+                    <IconButton
+                        id="random-recipe-button"
+                        className="icon-button"
+                        aria-label="Show a random recipe"
+                        title="Show a random recipe"
+                        disabled={filteredRecipes.length <= 1}
+                        onClick={() => {
+                            const randomIndex = Math.floor(Math.random() * filteredRecipes.length);
+                            setRandomRecipe(filteredRecipes[randomIndex]);
+                        }}
+                    >
+                        <Shuffle />
+                    </IconButton>
+                </div>
                 <div className="recipes">
                     <TextField
                         disabled={recipes.length === 0}
@@ -371,66 +424,63 @@ function Kitchen({ parentToChild }: any) {
                     {recipes.length === 0 ? (
                         <p>No recipes yet. Create one by selecting ingredients above!</p>
                     ) : (
-                        recipes
-                            .filter((recipe) =>
-                                selectedIngredients && selectedIngredients.length > 0
-                                    ? recipe.ingredients.every((ing) =>
-                                          selectedIngredients?.some((sel) => sel.label === ing),
-                                      )
-                                    : true,
-                            )
-                            .filter((recipe) => recipe.name.toLowerCase().includes(recipeSearchName.toLowerCase()))
-                            .map((recipe) => (
-                                <Accordion
-                                    expanded={expandedRecipe === recipe.name}
-                                    onChange={handleExpandRecipe(recipe.name)}
-                                >
-                                    <AccordionSummary expandIcon={<ExpandMore />}>
-                                        <h3>{recipe.name}</h3>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        Ingredients:
-                                        <ul>
-                                            {recipe.ingredients.map((ing, index) => (
-                                                <li key={index}>{ing}</li>
-                                            ))}
-                                        </ul>
+                        filteredRecipes.map((recipe) => (
+                            <Accordion
+                                expanded={expandedRecipe === recipe.name}
+                                onChange={handleExpandRecipe(recipe.name)}
+                            >
+                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <h3>{recipe.name}</h3>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <div className="recipe-details">
+                                        <div>
+                                            Ingredients:
+                                            <ul>
+                                                {recipe.ingredients.map((ing, index) => (
+                                                    <li key={index}>{ing}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                         {recipe.notes && (
                                             <div style={{ whiteSpace: "pre-line" }}>
                                                 Notes:<br></br>
                                                 {recipe.notes}
                                             </div>
                                         )}
-                                    </AccordionDetails>
-                                    <AccordionActions>
-                                        <Button
-                                            variant="text"
-                                            onClick={() => {
-                                                setEditingRecipe(true);
-                                                setRecipeName(expandedRecipe as string);
-                                                setRecipeNotes(getExpandedRecipe()?.notes || "");
-                                                setEditRecipeSelectedIngredients(
-                                                    ingredients
-                                                        .filter((ing) => getExpandedRecipe()?.ingredients.includes(ing))
-                                                        .map((ing) => createOption(ing)),
-                                                );
-                                                openCreateRecipeModal(true);
-                                            }}
-                                        >
-                                            <Edit />
-                                        </Button>
-                                        <Button
-                                            variant="text"
-                                            color="error"
-                                            onClick={() => {
-                                                setDeleteRecipeModalOpen(true);
-                                            }}
-                                        >
-                                            <Delete />
-                                        </Button>
-                                    </AccordionActions>
-                                </Accordion>
-                            ))
+                                    </div>
+                                </AccordionDetails>
+                                <AccordionActions>
+                                    <Button
+                                        id="edit-recipe-button"
+                                        variant="text"
+                                        onClick={() => {
+                                            setEditingRecipe(true);
+                                            setRecipeName(expandedRecipe as string);
+                                            setRecipeNotes(getExpandedRecipe()?.notes || "");
+                                            setEditRecipeSelectedIngredients(
+                                                ingredients
+                                                    .filter((ing) => getExpandedRecipe()?.ingredients.includes(ing))
+                                                    .map((ing) => createOption(ing)),
+                                            );
+                                            openCreateRecipeModal(true);
+                                        }}
+                                    >
+                                        <Edit />
+                                    </Button>
+                                    <Button
+                                        id="delete-recipe-button"
+                                        variant="text"
+                                        color="error"
+                                        onClick={() => {
+                                            setDeleteRecipeModalOpen(true);
+                                        }}
+                                    >
+                                        <Delete />
+                                    </Button>
+                                </AccordionActions>
+                            </Accordion>
+                        ))
                     )}
                 </div>
             </div>

@@ -1,4 +1,5 @@
-p {
+p,
+ul {
     margin: 0;
 }
 
@@ -73,6 +74,12 @@ p {
             color: #777;
         }
     }
+}
+
+.recipe-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .ingredient-select {
@@ -189,11 +196,19 @@ p {
 .dark-mode.modal-content {
     border: 2px solid #000;
     background-color: #0d1116;
+
+    .recipe-details {
+        color: #fff;
+    }
 }
 
 .light-mode.modal-content {
     border: 2px solid #0d1116;
     background-color: #f8f9fa;
+
+    .recipe-details {
+        color: #0d1116;
+    }
 }
 
 .modal-content {
