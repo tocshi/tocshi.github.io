@@ -41,6 +41,11 @@ function Kitchen({ parentToChild }: any) {
         const saved = localStorage.getItem("recipes");
         return saved ? JSON.parse(saved) : [];
     });
+    const [tags, setTags] = useState<string[]>(() => {
+        const saved = localStorage.getItem("tags");
+        return saved ? JSON.parse(saved) : [];
+    });
+
     const [selectedIngredients, setSelectedIngredients] = useState<Option[] | null>(null);
     const [recipeName, setRecipeName] = useState<string>(""); // Used for both creating and editing recipes, also set when editing a recipe
     const [recipeNotes, setRecipeNotes] = useState<string>("");
@@ -54,6 +59,7 @@ function Kitchen({ parentToChild }: any) {
     const [isCreateRecipeModalOpen, setCreateRecipeModalOpen] = useState(false);
     const [isDeleteRecipeModalOpen, setDeleteRecipeModalOpen] = useState(false);
     const [isHelpModalOpen, setHelpModalOpen] = useState(false);
+    const [isEditTagsModalOpen, setEditTagsModalOpen] = useState(false);
 
     // Save to localStorage whenever ingredients, recipes, or tags change
     useEffect(() => {
@@ -65,6 +71,11 @@ function Kitchen({ parentToChild }: any) {
         console.log("Saving recipes to localStorage:", recipes);
         localStorage.setItem("recipes", JSON.stringify(recipes));
     }, [recipes]);
+
+    useEffect(() => {
+        console.log("Saving tags to localStorage:", tags);
+        localStorage.setItem("tags", JSON.stringify(tags));
+    }, [tags]);
 
     const handleAddIngredient = (inputValue: string) => {
         if (inputValue.trim() !== "") {
