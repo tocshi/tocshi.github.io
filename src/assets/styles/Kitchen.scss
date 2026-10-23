@@ -45,13 +45,57 @@ ul {
         color: rgba(0, 0, 0, 0.87);
     }
 
+    .recipe-summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .recipe-tags {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
     .MuiAccordionActions-root {
         display: flex;
         justify-content: flex-end;
     }
 
+    .MuiAccordionDetails-root {
+        padding: 0 16px;
+    }
+
     .MuiInputBase-root {
         margin-bottom: 20px;
+    }
+
+    .tag-filter-bar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .tag-filters {
+        flex: 1 1 auto;
+    }
+
+    .manage-tags-button {
+        flex: 0 0 auto;
+        min-width: max-content;
+        padding: 4px 8px;
+        text-transform: none;
+    }
+
+    .MuiChip-root {
+        max-width: 100%;
     }
 
     fieldset {
@@ -76,6 +120,29 @@ ul {
     }
 }
 
+.tag-filters,
+.managed-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-tag-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .MuiTextField-root {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .MuiButton-root {
+        flex: 0 0 auto;
+    }
+}
+
 .recipe-details {
     display: flex;
     flex-direction: column;
@@ -96,6 +163,33 @@ ul {
 
 .light-mode .icon-button {
     color: #0d1116;
+}
+
+.dark-mode .tag-filters .MuiChip-outlined {
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #fff;
+}
+
+.dark-mode .managed-tags .MuiChip-root {
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #fff;
+}
+
+.dark-mode .managed-tags .MuiChip-deleteIcon {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.recipes .recipe-tags .MuiChip-root {
+    background-color: #e4e7eb;
+    color: #0d1116;
+}
+
+.dark-mode .add-tag-controls .MuiOutlinedInput-notchedOutline {
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.dark-mode .add-tag-controls .MuiButton-root.Mui-disabled {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .dark-mode .items-container .ingredients > .ingredients-buttons > button,

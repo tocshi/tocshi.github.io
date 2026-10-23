@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
+import Select from "react-select";
 import "../../assets/styles/Kitchen.scss";
 import {
     Accordion,
@@ -7,6 +8,7 @@ import {
     AccordionDetails,
     AccordionSummary,
     Button,
+    Chip,
     IconButton,
     Modal,
     TextField,
@@ -51,6 +53,9 @@ function Kitchen({ parentToChild }: any) {
     const [recipeNotes, setRecipeNotes] = useState<string>("");
     const [recipeSearchName, setRecipeSearchName] = useState<string>("");
     const [editRecipeSelectedIngredients, setEditRecipeSelectedIngredients] = useState<Option[] | null>(null);
+    const [recipeTags, setRecipeTags] = useState<string[]>([]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [newTag, setNewTag] = useState("");
 
     const [expandedRecipe, setExpandedRecipe] = React.useState<string | false>(false);
     const [isEditingRecipe, setEditingRecipe] = useState(false);
@@ -102,6 +107,25 @@ function Kitchen({ parentToChild }: any) {
         }
     };
 
+    const handleAddTag = () => {
+        const trimmedTag = newTag.trim();
+        if (trimmedTag && !tags.some((tag) => tag.toLowerCase() === trimmedTag.toLowerCase())) {
+            setTags([...tags, trimmedTag].sort((a, b) => a.localeCompare(b)));
+        }
+        setNewTag("");
+    };
+
+    const handleDeleteTag = (tagToDelete: string) => {
+        setTags(tags.filter((tag) => tag !== tagToDelete));
+        setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
+        setRecipes(
+            recipes.map((recipe) => ({
+                ...recipe,
+                tags: (recipe.tags || []).filter((tag) => tag !== tagToDelete),
+            })),
+        );
+    };
+
     const openDeleteIngredientModal = () => {
         if (selectedIngredients && selectedIngredients.length > 0) {
             setDeleteIngredientModalOpen(true);
@@ -116,6 +140,7 @@ function Kitchen({ parentToChild }: any) {
             setCreateRecipeModalOpen(true);
             setRecipeName("");
             setRecipeNotes("");
+            setRecipeTags([]);
         }
     };
 
@@ -162,7 +187,10 @@ function Kitchen({ parentToChild }: any) {
                 ? recipe.ingredients.every((ing) => selectedIngredients.some((sel) => sel.label === ing))
                 : true,
         )
-        .filter((recipe) => recipe.name.toLowerCase().includes(recipeSearchName.toLowerCase()));
+        .filter((recipe) => recipe.name.toLowerCase().includes(recipeSearchName.toLowerCase()))
+        .filter((recipe) =>
+            selectedTags.length > 0 ? selectedTags.some((tag) => (recipe.tags || []).includes(tag)) : true,
+        );
 
     return (
         <div id="kitchen">
@@ -180,7 +208,9 @@ function Kitchen({ parentToChild }: any) {
                     </p>
                     <p>
                         You can filter recipes by name using the search box in the "Recipes" section, or by selecting
-                        ingredients. Only recipes that can be made with the selected ingredients will be shown.
+                        ingredients and tags. Only recipes that match your selected filters will be shown. You can
+                        create and remove tags with the "Manage Tags" button, then assign them when creating or editing
+                        a recipe.
                     </p>
                 </div>
             </Modal>
@@ -208,6 +238,46 @@ function Kitchen({ parentToChild }: any) {
                             </div>
                         </>
                     )}
+                </div>
+            </Modal>
+
+            <Modal open={isEditTagsModalOpen} onClose={() => setEditTagsModalOpen(false)}>
+                <div className={`modal-content tags-modal-content ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
+                    <h2>Manage Tags</h2>
+                    <div className="add-tag-controls">
+                        <TextField
+                            size="small"
+                            label="Tag Name"
+                            value={newTag}
+                            onChange={(event) => setNewTag(event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    handleAddTag();
+                                }
+                            }}
+                        />
+                        <Button
+                            onClick={handleAddTag}
+                            disabled={
+                                !newTag.trim() || tags.some((tag) => tag.toLowerCase() === newTag.trim().toLowerCase())
+                            }
+                        >
+                            Add
+                        </Button>
+                    </div>
+                    {tags.length > 0 ? (
+                        <div className="managed-tags">
+                            {tags.map((tag) => (
+                                <Chip key={tag} label={tag} variant="outlined" onDelete={() => handleDeleteTag(tag)} />
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No tags yet. Add one above.</p>
+                    )}
+                    <div className="modal-buttons">
+                        <Button onClick={() => setEditTagsModalOpen(false)}>Done</Button>
+                    </div>
                 </div>
             </Modal>
 
@@ -255,6 +325,15 @@ function Kitchen({ parentToChild }: any) {
                         onCreateOption={handleAddIngredient}
                         value={isEditingRecipe ? editRecipeSelectedIngredients : selectedIngredients}
                     />
+                    <Select
+                        className="ingredient-select"
+                        isMulti
+                        options={tags.map((tag) => ({ value: tag, label: tag }))}
+                        placeholder="Select tags (optional)..."
+                        noOptionsMessage={() => "Create tags with Manage Tags"}
+                        onChange={(newValue) => setRecipeTags(newValue ? newValue.map((option) => option.label) : [])}
+                        value={recipeTags.map((tag) => ({ value: tag, label: tag }))}
+                    />
                     <TextField
                         size="small"
                         required
@@ -288,6 +367,7 @@ function Kitchen({ parentToChild }: any) {
                                     setEditingRecipe(false);
                                     setEditRecipeSelectedIngredients(null);
                                 }
+                                setRecipeTags([]);
                             }}
                         >
                             Cancel
@@ -327,7 +407,7 @@ function Kitchen({ parentToChild }: any) {
                                                 .concat([
                                                     {
                                                         name: recipeName,
-                                                        tags: [],
+                                                        tags: recipeTags,
                                                         ingredients: selectedOptions,
                                                         notes: recipeNotes,
                                                     },
@@ -337,11 +417,12 @@ function Kitchen({ parentToChild }: any) {
                                         setExpandedRecipe(recipeName);
                                         setEditingRecipe(false);
                                     } else {
-                                        handleAddRecipe(recipeName, [], selectedOptions, recipeNotes);
+                                        handleAddRecipe(recipeName, recipeTags, selectedOptions, recipeNotes);
                                     }
 
                                     setRecipeName("");
                                     setRecipeNotes("");
+                                    setRecipeTags([]);
                                     setEditRecipeSelectedIngredients(null);
                                     setCreateRecipeModalOpen(false);
                                 }
@@ -421,6 +502,37 @@ function Kitchen({ parentToChild }: any) {
                             setRecipeSearchName(e.target.value);
                         }}
                     />
+                    <div className={`tag-filter-bar ${mode === "dark" ? "dark-mode" : "light-mode"}`}>
+                        <div className="tag-filters" role="group" aria-label="Filter recipes by tag">
+                            {tags.map((tag) => {
+                                const isSelected = selectedTags.includes(tag);
+                                return (
+                                    <Chip
+                                        key={tag}
+                                        label={tag}
+                                        clickable
+                                        color={isSelected ? "primary" : "default"}
+                                        variant={isSelected ? "filled" : "outlined"}
+                                        aria-pressed={isSelected}
+                                        onClick={() =>
+                                            setSelectedTags(
+                                                isSelected
+                                                    ? selectedTags.filter((selectedTag) => selectedTag !== tag)
+                                                    : [...selectedTags, tag],
+                                            )
+                                        }
+                                    />
+                                );
+                            })}
+                        </div>
+                        <Button
+                            className="manage-tags-button"
+                            onClick={() => setEditTagsModalOpen(true)}
+                            aria-label="Manage tags"
+                        >
+                            Manage Tags
+                        </Button>
+                    </div>
                     {recipes.length === 0 ? (
                         <p>No recipes yet. Create one by selecting ingredients above!</p>
                     ) : (
@@ -430,7 +542,16 @@ function Kitchen({ parentToChild }: any) {
                                 onChange={handleExpandRecipe(recipe.name)}
                             >
                                 <AccordionSummary expandIcon={<ExpandMore />}>
-                                    <h3>{recipe.name}</h3>
+                                    <div className="recipe-summary">
+                                        <h3>{recipe.name}</h3>
+                                        {recipe.tags?.length > 0 && (
+                                            <div className="recipe-tags" aria-label={`Tags for ${recipe.name}`}>
+                                                {recipe.tags.map((tag) => (
+                                                    <Chip key={tag} label={tag} size="small" />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <div className="recipe-details">
@@ -458,6 +579,7 @@ function Kitchen({ parentToChild }: any) {
                                             setEditingRecipe(true);
                                             setRecipeName(expandedRecipe as string);
                                             setRecipeNotes(getExpandedRecipe()?.notes || "");
+                                            setRecipeTags(getExpandedRecipe()?.tags || []);
                                             setEditRecipeSelectedIngredients(
                                                 ingredients
                                                     .filter((ing) => getExpandedRecipe()?.ingredients.includes(ing))
