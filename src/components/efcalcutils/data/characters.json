@@ -1,0 +1,100 @@
+[
+    {
+        "id": "gilberta",
+        "name": "Gilberta",
+        "element": "Nature",
+        "class": "Supporter",
+        "strength": 89,
+        "agility": 92,
+        "intellect": 127,
+        "will": 171,
+        "atk": 329,
+        "hp": 5495,
+        "primaryStat": "will",
+        "secondaryStat": "intellect",
+        "basicAttack": [
+            {
+                "multiplier": 68.0,
+                "hitCount": 1,
+                "frames": 30,
+                "cancelFrame": 10,
+                "stagger": 0.0
+            },
+            {
+                "multiplier": 81.0,
+                "hitCount": 2,
+                "frames": 30,
+                "cancelFrame": 10,
+                "stagger": 0.0
+            },
+            {
+                "multiplier": 91.0,
+                "hitCount": 3,
+                "frames": 30,
+                "cancelFrame": 10,
+                "stagger": 0.0
+            },
+            {
+                "multiplier": 112.0,
+                "hitCount": 3,
+                "frames": 30,
+                "cancelFrame": 10,
+                "stagger": 16.0
+            }
+        ],
+        "finisherAttack": {
+            "multiplier": 900.0,
+            "hitCount": 1,
+            "frames": 60,
+            "cancelFrame": 20,
+            "stagger": 0.0
+        },
+        "diveAttack": {
+            "multiplier": 180.0,
+            "hitCount": 1,
+            "frames": 90,
+            "cancelFrame": 30,
+            "stagger": 0.0
+        },
+        "battleSkills": [
+            [
+                {
+                    "multiplier": 1.0,
+                    "hitCount": 1,
+                    "frames": 30,
+                    "cancelFrame": 10,
+                    "stagger": 0.0
+                },
+                {
+                    "multiplier": 1.0,
+                    "hitCount": 1,
+                    "frames": 30,
+                    "cancelFrame": 10,
+                    "stagger": 0.0
+                }
+            ]
+        ],
+        "battleSkillSPCosts": [100],
+        "comboSkills": [
+            [
+                {
+                    "multiplier": 1.0,
+                    "hitCount": 1,
+                    "frames": 30,
+                    "cancelFrame": 10,
+                    "stagger": 0.0,
+                    "ultimateEnergyGain": 10.0
+                }
+            ]
+        ],
+        "comboSkillCooldowns": [19],
+        "ultimateSkill": {
+            "ultimateEnergyCost": 90,
+            "multiplier": 5.0,
+            "hitCount": 1,
+            "frames": 120,
+            "cancelFrame": 40,
+            "stagger": 0.0
+        }
+    }
+]

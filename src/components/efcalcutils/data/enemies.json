@@ -1,0 +1,20 @@
+[
+    {
+        "id": "rhodagn-90",
+        "name": "Rhodagn the Bonekrushing Fist lv90",
+        "enemies": [
+            {
+                "name": "Rhodagn the Bonekrushing Fist",
+                "level": 90,
+                "hp": 2292909,
+                "attack": 4130,
+                "defense": 100,
+                "resistancePhysical": 0,
+                "resistanceHeat": 0,
+                "resistanceElectric": 0,
+                "resistanceCryo": 0,
+                "resistanceNature": 0
+            }
+        ]
+    }
+]

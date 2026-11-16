@@ -1,0 +1,14 @@
+[
+    {
+        "id": "turbid-cutting-torch-t1",
+        "name": "Turbid Cutting Torch T1",
+        "set": "tide-surge",
+        "stats": {
+            "def": 21,
+            "intellect": 41,
+            "will": 27,
+            "dmgBonusHeat": 29.9,
+            "dmgBonusNature": 29.9
+        }
+    }
+]

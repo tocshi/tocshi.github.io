@@ -1,0 +1,14 @@
+[
+    {
+        "id": "hot-work-gauntlets-t1",
+        "name": "Hot Work Gauntlets T1",
+        "set": "hot-work",
+        "stats": {
+            "def": 42,
+            "will": 84,
+            "intellect": 55,
+            "dmgBonusHeat": 24.9,
+            "dmgBonusNature": 24.9
+        }
+    }
+]

@@ -1,0 +1,13 @@
+[
+    {
+        "id": "tide-fall-light-armor-t1",
+        "name": "Tide Fall Light Armor T1",
+        "set": "tide-surge",
+        "stats": {
+            "def": 56,
+            "intellect": 113,
+            "will": 75,
+            "ultimateGainEfficiency": 16.0
+        }
+    }
+]

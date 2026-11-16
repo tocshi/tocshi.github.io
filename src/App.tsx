@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Main, Timeline, Expertise, Project, Contact, Navigation, Footer } from "./components";
 import { Kitchen } from "./components/kitchen";
+import EFCalcUtils from "./components/efcalcutils/EFCalcUtils";
 import FadeIn from "./components/FadeIn";
 import "./index.scss";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -47,6 +48,17 @@ function App() {
                                 <Navigation parentToChild={{ mode }} modeChange={handleModeChange} />
                                 <FadeIn transitionDuration={700}>
                                     <Kitchen parentToChild={{ mode }} />
+                                </FadeIn>
+                            </>
+                        }
+                    />
+                    <Route
+                        path="/efcalcutils"
+                        element={
+                            <>
+                                <Navigation parentToChild={{ mode }} modeChange={handleModeChange} />
+                                <FadeIn transitionDuration={700}>
+                                    <EFCalcUtils />
                                 </FadeIn>
                             </>
                         }
