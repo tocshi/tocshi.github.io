@@ -27,13 +27,6 @@
         color: #b7c8ff;
     }
 
-    .efcalc-eyebrow {
-        color: #a7b7da;
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-    }
-
     .efcalc-selectors,
     .efcalc-editors {
         display: grid;
@@ -42,7 +35,8 @@
         margin-bottom: 20px;
     }
 
-    .efcalc-selectors {
+    .efcalc-selectors,
+    .efcalc-equipment-grid {
         .MuiInputLabel-root,
         .MuiOutlinedInput-root,
         .MuiAutocomplete-popupIndicator,
@@ -74,24 +68,40 @@
     }
 
     .efcalc-result {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
+        display: block;
         margin: 24px 0;
         padding: 24px;
 
-        .efcalc-dps {
-            margin-top: 6px;
-            font-size: clamp(2rem, 6vw, 3rem);
-            font-weight: 700;
+        h2 {
+            margin-bottom: 8px;
+        }
+
+        h3 {
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            margin: 0 0 8px;
         }
     }
 
-    .efcalc-disclaimer {
-        max-width: 300px;
-        color: #d3ba83;
+    .efcalc-result-note {
+        color: #b7c0ce;
         font-size: 0.95rem;
+    }
+
+    .efcalc-gear-warning {
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        border: 1px solid #d3ba83;
+        border-radius: 6px;
+        background: rgba(211, 186, 131, 0.1);
+        color: #f0d99f;
+
+        ul {
+            margin: 8px 0 0;
+            padding-left: 20px;
+        }
     }
 
     .efcalc-panel {
@@ -127,6 +137,56 @@
         gap: 16px;
     }
 
+    .efcalc-equipment-panel {
+        margin-bottom: 20px;
+    }
+
+    .efcalc-equipment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .efcalc-stat-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .efcalc-attack-groups {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .efcalc-attack-group {
+        min-width: 0;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.12);
+    }
+
+    .efcalc-skill + .efcalc-skill {
+        margin-top: 16px;
+    }
+
+    .efcalc-attack-value {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 10px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.06);
+
+        & + .efcalc-attack-value {
+            margin-top: 6px;
+        }
+
+        strong {
+            white-space: nowrap;
+        }
+    }
+
     .efcalc-enemy + .efcalc-enemy {
         margin-top: 24px;
     }
@@ -135,19 +195,12 @@
         margin-bottom: 12px;
     }
 
-    .efcalc-next-steps {
-        margin-top: 24px;
-        color: #b7c0ce;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
 }
 
 .light-mode .efcalc-container {
     color: #0d1116;
     background: #f8f9fa;
 
-    .efcalc-eyebrow,
     .efcalc-back-link {
         color: #304c83;
     }
@@ -158,15 +211,8 @@
         background: #fff;
     }
 
-    .efcalc-disclaimer {
-        color: #725414;
-    }
-
-    .efcalc-next-steps {
-        color: #535d6b;
-    }
-
-    .efcalc-selectors {
+    .efcalc-selectors,
+    .efcalc-equipment-grid {
         .MuiInputLabel-root,
         .MuiOutlinedInput-root,
         .MuiAutocomplete-popupIndicator,
@@ -205,6 +251,24 @@
             border-color: rgba(13, 17, 22, 0.35);
         }
     }
+
+    .efcalc-gear-warning {
+        color: #725414;
+        background: rgba(211, 186, 131, 0.15);
+    }
+
+    .efcalc-result-note {
+        color: #535d6b;
+    }
+
+    .efcalc-attack-group {
+        border-color: rgba(13, 17, 22, 0.16);
+        background: rgba(13, 17, 22, 0.03);
+    }
+
+    .efcalc-attack-value {
+        background: rgba(13, 17, 22, 0.05);
+    }
 }
 
 @media (max-width: 700px) {
@@ -216,16 +280,22 @@
             grid-template-columns: 1fr;
         }
 
-        .efcalc-result {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 12px;
+        .efcalc-equipment-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .efcalc-attack-groups {
+            grid-template-columns: 1fr;
         }
     }
 }
 
 @media (max-width: 420px) {
     .efcalc-container .efcalc-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .efcalc-container .efcalc-equipment-grid {
         grid-template-columns: 1fr;
     }
 }

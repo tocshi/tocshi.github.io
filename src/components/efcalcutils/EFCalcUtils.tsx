@@ -1,9 +1,15 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import "../../assets/styles/EFCalcUtils.scss";
 import charactersData from "./data/characters.json";
 import enemyCompositionsData from "./data/enemies.json";
+import weaponsData from "./data/weapons.json";
+import armorData from "./data/gear-armor.json";
+import glovesData from "./data/gear-gloves.json";
+import kitData from "./data/gear-kit.json";
+import { findGearStatWarnings } from "./gearStatValidation";
+import type { GearStatSource } from "./gearStatValidation";
 
 enum CharacterAttribute {
     Strength = "strength",
@@ -21,7 +27,7 @@ interface Character {
     agility: number;
     intellect: number;
     will: number;
-    atk: number;
+    baseAtk: number;
     hp: number;
     primaryStat: CharacterAttribute;
     secondaryStat: CharacterAttribute;
@@ -102,6 +108,59 @@ interface CharacterCombatStats {
     finalDmgReduction: number;
 }
 
+interface GearItem {
+    id: string;
+    name: string;
+    type?: string;
+    set?: string;
+    baseAtk?: number;
+    stats: Record<string, number>;
+}
+
+const emptyCombatStats: CharacterCombatStats = {
+    strength: 0,
+    agility: 0,
+    intellect: 0,
+    will: 0,
+    hp: 0,
+    atk: 0,
+    def: 0,
+    critRate: 0,
+    critDamage: 0,
+    artsIntensity: 0,
+    resistancePhysical: 0,
+    resistanceHeat: 0,
+    resistanceElectric: 0,
+    resistanceCryo: 0,
+    resistanceNature: 0,
+    resistanceAether: 0,
+    treatmentBonus: 0,
+    treatmentReceivedBonus: 0,
+    comboSkillCooldownReduction: 0,
+    ultimateGainEfficiency: 0,
+    staggerEfficiencyBonus: 0,
+    dmgBonusPhysical: 0,
+    dmgBonusHeat: 0,
+    dmgBonusElectric: 0,
+    dmgBonusCryo: 0,
+    dmgBonusNature: 0,
+    dmgBonusBasicAttack: 0,
+    dmgBonusBattleSkill: 0,
+    dmgBonusComboSkill: 0,
+    dmgBonusUltimateSkill: 0,
+    dmgBonusStagger: 0,
+    finalDmgReduction: 0,
+};
+
+const combatStatFields = Object.keys(emptyCombatStats) as Array<keyof CharacterCombatStats>;
+const gearDataSources: GearStatSource[] = [
+    { category: "Weapon", items: weaponsData },
+    { category: "Armor", items: armorData },
+    { category: "Gloves", items: glovesData },
+    { category: "Kit", items: kitData },
+];
+export const gearStatWarnings = findGearStatWarnings(gearDataSources, new Set(combatStatFields));
+
 function isCharacterAttribute(value: string): value is CharacterAttribute {
     return Object.values(CharacterAttribute).some((attribute) => attribute === value);
 }
@@ -118,10 +177,6 @@ const characters: Character[] = charactersData.map((character) => {
     };
 });
 
-function estimateDps(character: Character, enemy: Enemy): number {
-    return 0;
-}
-
 function updateNumber<T extends Character | Enemy>(
     records: T[],
     index: number,
@@ -132,28 +187,30 @@ function updateNumber<T extends Character | Enemy>(
     setRecords(records.map((record, recordIndex) => (recordIndex === index ? { ...record, [field]: value } : record)));
 }
 
+function getCombatStatLabel(field: keyof CharacterCombatStats): string {
+    return field
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (firstLetter) => firstLetter.toUpperCase())
+        .replace(/^Dmg/, "Damage")
+        .replace(/\bAtk\b/g, "ATK")
+        .replace(/\bDef\b/g, "DEF");
+}
+
 function EFCalcUtils() {
     const [characterRecords, setCharacters] = useState<Character[]>(characters);
     const [compositions, setCompositions] = useState<EnemyComposition[]>(enemyCompositionsData);
     const [selectedCharacterId, setSelectedCharacterId] = useState(characters[0]?.id ?? "");
     const [selectedCompositionId, setSelectedCompositionId] = useState(enemyCompositionsData[0]?.id ?? "");
+    const [selectedWeapon, setSelectedWeapon] = useState<GearItem | null>(null);
+    const [selectedArmor, setSelectedArmor] = useState<GearItem | null>(null);
+    const [selectedGloves, setSelectedGloves] = useState<GearItem | null>(null);
+    const [selectedKit1, setSelectedKit1] = useState<GearItem | null>(null);
+    const [selectedKit2, setSelectedKit2] = useState<GearItem | null>(null);
+    const [stageModifiers, setStageModifiers] = useState<CharacterCombatStats>({ ...emptyCombatStats });
 
     const selectedCharacter = characterRecords.find((character) => character.id === selectedCharacterId);
     const selectedComposition = compositions.find((composition) => composition.id === selectedCompositionId);
-    const averageDps = useMemo(() => {
-        if (!selectedCharacter || !selectedComposition) {
-            return 0;
-        }
-
-        if (selectedComposition.enemies.length === 0) {
-            return 0;
-        }
-
-        return (
-            selectedComposition.enemies.reduce((total, enemy) => total + estimateDps(selectedCharacter, enemy), 0) /
-            selectedComposition.enemies.length
-        );
-    }, [selectedCharacter, selectedComposition]);
+    const combatStats = emptyCombatStats;
 
     const updateCharacter = (index: number, field: keyof Character, value: number) => {
         updateNumber(characterRecords, index, field, value, setCharacters);
@@ -221,8 +278,8 @@ function EFCalcUtils() {
                             <TextField
                                 label="ATK"
                                 type="number"
-                                value={selectedCharacter.atk}
-                                onChange={(event) => updateCharacter(characterIndex, "atk", Number(event.target.value))}
+                                value={selectedCharacter.baseAtk}
+                                onChange={(event) => updateCharacter(characterIndex, "baseAtk", Number(event.target.value))}
                                 slotProps={{ htmlInput: { min: 0 } }}
                             />
                             <TextField
@@ -335,20 +392,177 @@ function EFCalcUtils() {
                 )}
             </div>
 
-            <section className="efcalc-result" aria-live="polite">
-                <div>
-                    <p className="efcalc-eyebrow">STARTER ESTIMATE · AVERAGE PER TARGET</p>
-                    <p className="efcalc-dps">{Math.round(averageDps).toLocaleString()} DPS</p>
+            <section className="efcalc-panel efcalc-equipment-panel">
+                <h2>Equipment</h2>
+                <p>Gear bonuses are not applied to Combat Stats yet.</p>
+                {gearStatWarnings.length > 0 && (
+                    <div className="efcalc-gear-warning" role="alert">
+                        <strong>Some gear stats are not in CharacterCombatStats:</strong>
+                        <ul>
+                            {gearStatWarnings.map((warning) => (
+                                <li key={`${warning.category}-${warning.itemName}`}>
+                                    {warning.category} — {warning.itemName}: {warning.unknownKeys.join(", ")}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+                <div className="efcalc-equipment-grid">
+                    <Autocomplete<GearItem>
+                        disablePortal
+                        options={weaponsData}
+                        value={selectedWeapon}
+                        getOptionLabel={(item) => item.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        onChange={(_, item) => setSelectedWeapon(item)}
+                        renderInput={(params) => <TextField {...params} label="Weapon" />}
+                    />
+                    <Autocomplete<GearItem>
+                        disablePortal
+                        options={armorData}
+                        value={selectedArmor}
+                        getOptionLabel={(item) => item.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        onChange={(_, item) => setSelectedArmor(item)}
+                        renderInput={(params) => <TextField {...params} label="Armor" />}
+                    />
+                    <Autocomplete<GearItem>
+                        disablePortal
+                        options={glovesData}
+                        value={selectedGloves}
+                        getOptionLabel={(item) => item.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        onChange={(_, item) => setSelectedGloves(item)}
+                        renderInput={(params) => <TextField {...params} label="Gloves" />}
+                    />
+                    <Autocomplete<GearItem>
+                        disablePortal
+                        options={kitData}
+                        value={selectedKit1}
+                        getOptionLabel={(item) => item.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        onChange={(_, item) => setSelectedKit1(item)}
+                        renderInput={(params) => <TextField {...params} label="Kit 1" />}
+                    />
+                    <Autocomplete<GearItem>
+                        disablePortal
+                        options={kitData}
+                        value={selectedKit2}
+                        getOptionLabel={(item) => item.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        onChange={(_, item) => setSelectedKit2(item)}
+                        renderInput={(params) => <TextField {...params} label="Kit 2" />}
+                    />
                 </div>
-                <p className="efcalc-disclaimer">
-                    Illustrative formula only. This is not yet an Endfield-accurate damage model.
-                </p>
             </section>
 
-            <p className="efcalc-next-steps">
-                Next steps: add real operator and enemy data, then replace the starter estimate with the game’s damage
-                rules. No buffs, rotations, or external data sources are included yet.
-            </p>
+            <div className="efcalc-editors efcalc-stat-panels">
+                <section className="efcalc-panel">
+                    <h2>Combat Stats</h2>
+                    <p>Read-only placeholders; stat calculations will be added later.</p>
+                    <div className="efcalc-fields efcalc-stat-fields">
+                        {combatStatFields.map((field) => (
+                            <TextField
+                                key={field}
+                                label={getCombatStatLabel(field)}
+                                type="number"
+                                value={combatStats[field]}
+                                slotProps={{ htmlInput: { readOnly: true } }}
+                            />
+                        ))}
+                    </div>
+                </section>
+                <section className="efcalc-panel">
+                    <h2>Stage Modifiers</h2>
+                    <p>External modifiers; they are not applied to Combat Stats yet.</p>
+                    <div className="efcalc-fields efcalc-stat-fields">
+                        {combatStatFields.map((field) => (
+                            <TextField
+                                key={field}
+                                label={getCombatStatLabel(field)}
+                                type="number"
+                                value={stageModifiers[field]}
+                                onChange={(event) =>
+                                    setStageModifiers((current) => ({
+                                        ...current,
+                                        [field]: Number(event.target.value),
+                                    }))
+                                }
+                            />
+                        ))}
+                    </div>
+                </section>
+            </div>
+
+            <section className="efcalc-result" aria-live="polite">
+                <h2>Attack Damage Placeholders</h2>
+                {selectedCharacter && (
+                    <>
+                        <p className="efcalc-result-note">Values below are attack multipliers, not calculated damage.</p>
+                        <div className="efcalc-attack-groups">
+                            <section className="efcalc-attack-group">
+                                <h3>Basic Attacks</h3>
+                                {selectedCharacter.basicAttack.map((attack, index) => (
+                                    <div className="efcalc-attack-value" key={`basic-${index}`}>
+                                        <span>SEQ {index + 1}</span>
+                                        <strong>{attack.multiplier}%</strong>
+                                    </div>
+                                ))}
+                            </section>
+                            <section className="efcalc-attack-group">
+                                <h3>Dive Attack</h3>
+                                <div className="efcalc-attack-value">
+                                    <span>Multiplier</span>
+                                    <strong>{selectedCharacter.diveAttack.multiplier}%</strong>
+                                </div>
+                            </section>
+                            <section className="efcalc-attack-group">
+                                <h3>Finisher Attack</h3>
+                                <div className="efcalc-attack-value">
+                                    <span>Multiplier</span>
+                                    <strong>{selectedCharacter.finisherAttack.multiplier}%</strong>
+                                </div>
+                            </section>
+                            <section className="efcalc-attack-group">
+                                <h3>Battle Skills</h3>
+                                {selectedCharacter.battleSkills.map((skill, skillIndex) => (
+                                    <div className="efcalc-skill" key={`battle-skill-${skillIndex}`}>
+                                        <h4>Battle Skill {skillIndex + 1}</h4>
+                                        {skill.map((attack, hitIndex) => (
+                                            <div className="efcalc-attack-value" key={`hit-${hitIndex}`}>
+                                                <span>Hit {hitIndex + 1}</span>
+                                                <strong>{attack.multiplier}%</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </section>
+                            <section className="efcalc-attack-group">
+                                <h3>Combo Skills</h3>
+                                {selectedCharacter.comboSkills.map((skill, skillIndex) => (
+                                    <div className="efcalc-skill" key={`combo-skill-${skillIndex}`}>
+                                        <h4>Combo Skill {skillIndex + 1}</h4>
+                                        {skill.map((attack, hitIndex) => (
+                                            <div className="efcalc-attack-value" key={`hit-${hitIndex}`}>
+                                                <span>Hit {hitIndex + 1}</span>
+                                                <strong>{attack.multiplier}%</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </section>
+                            <section className="efcalc-attack-group">
+                                <h3>Ultimate Attack</h3>
+                                <div className="efcalc-attack-value">
+                                    <span>Multiplier</span>
+                                    <strong>{selectedCharacter.ultimateSkill.multiplier}%</strong>
+                                </div>
+                            </section>
+                        </div>
+                    </>
+                )}
+            </section>
+
         </main>
     );
 }

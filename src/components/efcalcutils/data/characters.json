@@ -8,7 +8,7 @@
         "agility": 92,
         "intellect": 127,
         "will": 171,
-        "atk": 329,
+        "baseAtk": 329,
         "hp": 5495,
         "primaryStat": "will",
         "secondaryStat": "intellect",
@@ -59,14 +59,14 @@
         "battleSkills": [
             [
                 {
-                    "multiplier": 1.0,
-                    "hitCount": 1,
+                    "multiplier": 219.0,
+                    "hitCount": 5,
                     "frames": 30,
                     "cancelFrame": 10,
                     "stagger": 0.0
                 },
                 {
-                    "multiplier": 1.0,
+                    "multiplier": 130.0,
                     "hitCount": 1,
                     "frames": 30,
                     "cancelFrame": 10,
@@ -78,7 +78,7 @@
         "comboSkills": [
             [
                 {
-                    "multiplier": 1.0,
+                    "multiplier": 315.0,
                     "hitCount": 1,
                     "frames": 30,
                     "cancelFrame": 10,
@@ -90,7 +90,7 @@
         "comboSkillCooldowns": [19],
         "ultimateSkill": {
             "ultimateEnergyCost": 90,
-            "multiplier": 5.0,
+            "multiplier": 750.0,
             "hitCount": 1,
             "frames": 120,
             "cancelFrame": 40,

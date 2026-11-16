@@ -3,18 +3,11 @@
         "id": "opus-etch-figure",
         "name": "Opus: Etch Figure",
         "type": "Arts Unit",
-        "atk": 485,
-        "skill1": {
-            "attribute": "will",
-            "amount": 156.0
-        },
-        "skill2": {
-            "attribute": "dmgBonusNature",
-            "amount": 43.3
-        },
-        "skill3": {
-            "attribute": "atk",
-            "amount": 19.6
+        "baseAtk": 485,
+        "stats": {
+            "will": 113,
+            "dmgBonusNature": 75,
+            "atk": 16.0
         }
     }
 ]
