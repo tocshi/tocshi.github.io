@@ -9,7 +9,7 @@ import armorData from "./data/gear-armor.json";
 import glovesData from "./data/gear-gloves.json";
 import kitData from "./data/gear-kit.json";
 import { findGearStatWarnings } from "./gearStatValidation";
-import type { GearStatSource } from "./gearStatValidation";
+import type { GearStats, GearStatSource } from "./gearStatValidation";
 
 enum CharacterAttribute {
     Strength = "strength",
@@ -17,6 +17,10 @@ enum CharacterAttribute {
     Intellect = "intellect",
     Will = "will",
 }
+
+const characterAttributes = Object.values(CharacterAttribute);
+const characterBaseStatFields = ["baseAtk", "hp", ...characterAttributes] as const;
+type CharacterBaseStat = (typeof characterBaseStatFields)[number];
 
 interface Character {
     id: string;
@@ -29,6 +33,7 @@ interface Character {
     will: number;
     baseAtk: number;
     hp: number;
+    trustStats?: Partial<Record<CharacterBaseStat, number>>;
     primaryStat: CharacterAttribute;
     secondaryStat: CharacterAttribute;
     basicAttack: CharacterAttack[];
@@ -58,8 +63,8 @@ interface Enemy {
     name: string;
     level: number;
     hp: number;
-    attack: number;
-    defense: number;
+    atk: number;
+    def: number;
     resistancePhysical: number;
     resistanceHeat: number;
     resistanceElectric: number;
@@ -114,7 +119,7 @@ interface GearItem {
     type?: string;
     set?: string;
     baseAtk?: number;
-    stats: Record<string, number>;
+    stats: GearStats;
 }
 
 const emptyCombatStats: CharacterCombatStats = {
@@ -153,6 +158,27 @@ const emptyCombatStats: CharacterCombatStats = {
 };
 
 const combatStatFields = Object.keys(emptyCombatStats) as Array<keyof CharacterCombatStats>;
+const pointStats = new Set<keyof CharacterCombatStats>([
+    "strength",
+    "agility",
+    "intellect",
+    "will",
+    "hp",
+    "atk",
+    "def",
+    "artsIntensity",
+]);
+const combatStatFormatter = new Intl.NumberFormat("en", { maximumFractionDigits: 2, useGrouping: false });
+const damageBonusFormatter = new Intl.NumberFormat("en", { maximumFractionDigits: 1, useGrouping: false });
+const gearSetBonuses = new Map<string, { pieces: number; stats: Partial<CharacterCombatStats> }>([
+    [
+        "tide-surge",
+        {
+            pieces: 3,
+            stats: { dmgBonusBattleSkill: 20, dmgBonusComboSkill: 20, dmgBonusUltimateSkill: 20 },
+        },
+    ],
+]);
 const gearDataSources: GearStatSource[] = [
     { category: "Weapon", items: weaponsData },
     { category: "Armor", items: armorData },
@@ -161,8 +187,65 @@ const gearDataSources: GearStatSource[] = [
 ];
 export const gearStatWarnings = findGearStatWarnings(gearDataSources, new Set(combatStatFields));
 
+function calculateCombatStats(
+    character: Character,
+    weapon: GearItem | null,
+    gear: readonly (GearItem | null)[],
+    potential: number,
+): CharacterCombatStats {
+    const setCounts = new Map<string, number>();
+    for (const item of gear) {
+        if (item?.set) {
+            setCounts.set(item.set, (setCounts.get(item.set) ?? 0) + 1);
+        }
+    }
+
+    const bonuses: Partial<CharacterCombatStats>[] = [];
+    for (const item of [weapon, ...gear]) {
+        if (item) bonuses.push(item.stats);
+    }
+    setCounts.forEach((count, set) => {
+        const bonus = gearSetBonuses.get(set);
+        if (bonus && count >= bonus.pieces) bonuses.push(bonus.stats);
+    });
+
+    const stats: CharacterCombatStats = { ...emptyCombatStats, critRate: 5, critDamage: 50 };
+    for (const bonus of bonuses) {
+        for (const field of combatStatFields) {
+            if (field !== "finalDmgReduction") stats[field] += bonus[field] ?? 0;
+        }
+    }
+    const damageTaken = bonuses.reduce((factor, bonus) => factor * (1 - (bonus.finalDmgReduction ?? 0) / 100), 1);
+    stats.finalDmgReduction = (1 - damageTaken) * 100;
+
+    const trustStats = character.trustStats;
+    for (const attribute of characterAttributes) {
+        stats[attribute] += character[attribute] + (trustStats?.[attribute] ?? 0);
+    }
+
+    const baseAtk = character.baseAtk + (trustStats?.baseAtk ?? 0) + (weapon?.baseAtk ?? 0);
+    const attributeMultiplier = 1 + 0.005 * stats[character.primaryStat] + 0.002 * stats[character.secondaryStat];
+    // Equipment stats.atk is stored in percentage points.
+    stats.atk = baseAtk * (1 + stats.atk / 100) * attributeMultiplier;
+    stats.hp += character.hp + (trustStats?.hp ?? 0) + 5 * stats.strength;
+
+    const physicalResistance = 100 * (1 - 1 / (1 + 0.001 * stats.agility));
+    const artsResistance = 100 * (1 - 1 / (1 + 0.001 * stats.intellect));
+    stats.resistancePhysical = Math.min(90, stats.resistancePhysical + physicalResistance);
+    for (const field of ["resistanceHeat", "resistanceElectric", "resistanceCryo", "resistanceNature"] as const) {
+        stats[field] = Math.min(90, stats[field] + artsResistance);
+    }
+    stats.treatmentReceivedBonus += 0.1 * stats.will;
+
+    if (character.id === "gilberta") {
+        stats.ultimateGainEfficiency += 7 + (potential >= 3 ? 5 : 0);
+    }
+
+    return stats;
+}
+
 function isCharacterAttribute(value: string): value is CharacterAttribute {
-    return Object.values(CharacterAttribute).some((attribute) => attribute === value);
+    return characterAttributes.some((attribute) => attribute === value);
 }
 
 const characters: Character[] = charactersData.map((character) => {
@@ -188,18 +271,63 @@ function updateNumber<T extends Character | Enemy>(
 }
 
 function getCombatStatLabel(field: keyof CharacterCombatStats): string {
-    return field
-        .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (firstLetter) => firstLetter.toUpperCase())
-        .replace(/^Dmg/, "Damage")
-        .replace(/\bAtk\b/g, "ATK")
-        .replace(/\bDef\b/g, "DEF");
+    switch (field) {
+        case "resistanceHeat":
+            return "Heat Resistance";
+        case "resistanceElectric":
+            return "Electric Resistance";
+        case "resistanceCryo":
+            return "Cryo Resistance";
+        case "resistanceNature":
+            return "Nature Resistance";
+        case "resistancePhysical":
+            return "Physical Resistance";
+        case "resistanceAether":
+            return "AEther Resistance";
+        case "dmgBonusHeat":
+            return "Heat Damage Bonus";
+        case "dmgBonusElectric":
+            return "Electric Damage Bonus";
+        case "dmgBonusCryo":
+            return "Cryo Damage Bonus";
+        case "dmgBonusNature":
+            return "Nature Damage Bonus";
+        case "dmgBonusPhysical":
+            return "Physical Damage Bonus";
+        case "dmgBonusBasicAttack":
+            return "Basic Attack Damage Bonus";
+        case "dmgBonusBattleSkill":
+            return "Battle Skill Damage Bonus";
+        case "dmgBonusComboSkill":
+            return "Combo Skill Damage Bonus";
+        case "dmgBonusUltimateSkill":
+            return "Ultimate Skill Damage Bonus";
+        case "dmgBonusStagger":
+            return "Stagger Damage Bonus";
+        default:
+            return field
+                .replace(/([A-Z])/g, " $1")
+                .replace(/^./, (firstLetter) => firstLetter.toUpperCase())
+                .replace(/^Dmg/, "Damage")
+                .replace(/\bHp\b/g, "HP")
+                .replace(/\bAtk\b/g, "ATK")
+                .replace(/\bDef\b/g, "DEF");
+    }
+}
+
+function formatCombatStat(field: keyof CharacterCombatStats, value: number): string {
+    if (field === "atk") return String(Math.floor(value));
+
+    const displayValue = field === "ultimateGainEfficiency" ? 100 + value : value;
+    const formatter = field.startsWith("dmgBonus") ? damageBonusFormatter : combatStatFormatter;
+    return `${formatter.format(displayValue)}${pointStats.has(field) ? "" : "%"}`;
 }
 
 function EFCalcUtils() {
     const [characterRecords, setCharacters] = useState<Character[]>(characters);
     const [compositions, setCompositions] = useState<EnemyComposition[]>(enemyCompositionsData);
     const [selectedCharacterId, setSelectedCharacterId] = useState(characters[0]?.id ?? "");
+    const [operatorPotentials, setOperatorPotentials] = useState<Record<string, number | "">>({});
     const [selectedCompositionId, setSelectedCompositionId] = useState(enemyCompositionsData[0]?.id ?? "");
     const [selectedWeapon, setSelectedWeapon] = useState<GearItem | null>(null);
     const [selectedArmor, setSelectedArmor] = useState<GearItem | null>(null);
@@ -210,7 +338,15 @@ function EFCalcUtils() {
 
     const selectedCharacter = characterRecords.find((character) => character.id === selectedCharacterId);
     const selectedComposition = compositions.find((composition) => composition.id === selectedCompositionId);
-    const combatStats = emptyCombatStats;
+    const potential = operatorPotentials[selectedCharacterId] ?? 0;
+    const combatStats = selectedCharacter
+        ? calculateCombatStats(
+              selectedCharacter,
+              selectedWeapon,
+              [selectedArmor, selectedGloves, selectedKit1, selectedKit2],
+              Number(potential),
+          )
+        : emptyCombatStats;
 
     const updateCharacter = (index: number, field: keyof Character, value: number) => {
         updateNumber(characterRecords, index, field, value, setCharacters);
@@ -237,25 +373,36 @@ function EFCalcUtils() {
     return (
         <main className="efcalc-container">
             <header className="efcalc-header">
-                <h1>Endfield Combat Calculator</h1>
-                <p>
-                    A work in progress for comparing operator stats against enemy compositions. Your edits stay in this
-                    page for now.
-                </p>
+                <h1>Endfield Solo Calculator</h1>
+                <p>A work in progress for comparing solo operator stats against enemy compositions.</p>
             </header>
 
             <div className="efcalc-selectors">
-                <Autocomplete
-                    disablePortal
-                    disableClearable
-                    fullWidth
-                    options={characterRecords}
-                    value={selectedCharacter}
-                    getOptionLabel={(character) => character.name}
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                    onChange={(_, character) => setSelectedCharacterId(character?.id ?? "")}
-                    renderInput={(params) => <TextField {...params} label="Operator" />}
-                />
+                <div className="efcalc-operator-selector">
+                    <Autocomplete
+                        disablePortal
+                        disableClearable
+                        fullWidth
+                        options={characterRecords}
+                        value={selectedCharacter}
+                        getOptionLabel={(character) => character.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        onChange={(_, character) => setSelectedCharacterId(character?.id ?? "")}
+                        renderInput={(params) => <TextField {...params} label="Operator" />}
+                    />
+                    <TextField
+                        label="Potential"
+                        type="number"
+                        value={potential}
+                        disabled={!selectedCharacter}
+                        slotProps={{ htmlInput: { min: 0, max: 5, step: 1 } }}
+                        onChange={(event) => {
+                            const { value, valueAsNumber } = event.target as HTMLInputElement;
+                            const level = value === "" ? "" : Math.min(5, Math.max(0, Math.trunc(valueAsNumber)));
+                            setOperatorPotentials((current) => ({ ...current, [selectedCharacterId]: level }));
+                        }}
+                    />
+                </div>
                 <Autocomplete
                     disablePortal
                     disableClearable
@@ -271,15 +418,17 @@ function EFCalcUtils() {
 
             <div className="efcalc-editors">
                 {selectedCharacter && (
-                    <section className="efcalc-panel">
-                        <h2>Operator base stats</h2>
+                    <section className="efcalc-panel" aria-labelledby="efcalc-operator-base-stats-heading">
+                        <h2 id="efcalc-operator-base-stats-heading">Operator base stats</h2>
                         {/* <p>Edit these values in src/components/efcalcutils/data/characters.json.</p> */}
                         <div className="efcalc-fields">
                             <TextField
                                 label="ATK"
                                 type="number"
                                 value={selectedCharacter.baseAtk}
-                                onChange={(event) => updateCharacter(characterIndex, "baseAtk", Number(event.target.value))}
+                                onChange={(event) =>
+                                    updateCharacter(characterIndex, "baseAtk", Number(event.target.value))
+                                }
                                 slotProps={{ htmlInput: { min: 0 } }}
                             />
                             <TextField
@@ -289,7 +438,7 @@ function EFCalcUtils() {
                                 onChange={(event) => updateCharacter(characterIndex, "hp", Number(event.target.value))}
                                 slotProps={{ htmlInput: { min: 0 } }}
                             />
-                            {(["strength", "agility", "intellect", "will"] as const).map((attribute) => (
+                            {characterAttributes.map((attribute) => (
                                 <TextField
                                     key={attribute}
                                     label={attribute[0].toUpperCase() + attribute.slice(1)}
@@ -301,6 +450,17 @@ function EFCalcUtils() {
                                     slotProps={{ htmlInput: { min: 0 } }}
                                 />
                             ))}
+                            {characterBaseStatFields
+                                .filter((field) => selectedCharacter.trustStats?.[field] !== undefined)
+                                .map((field) => (
+                                    <TextField
+                                        key={`trust-${field}`}
+                                        label={`Trust ${getCombatStatLabel(field === "baseAtk" ? "atk" : field)}`}
+                                        type="number"
+                                        value={selectedCharacter.trustStats?.[field]}
+                                        slotProps={{ htmlInput: { readOnly: true } }}
+                                    />
+                                ))}
                         </div>
                     </section>
                 )}
@@ -337,27 +497,17 @@ function EFCalcUtils() {
                                     <TextField
                                         label="ATK"
                                         type="number"
-                                        value={enemy.attack}
+                                        value={enemy.atk}
                                         onChange={(event) =>
-                                            updateEnemy(
-                                                compositionIndex,
-                                                enemyIndex,
-                                                "attack",
-                                                Number(event.target.value),
-                                            )
+                                            updateEnemy(compositionIndex, enemyIndex, "atk", Number(event.target.value))
                                         }
                                     />
                                     <TextField
-                                        label="Defense"
+                                        label="DEF"
                                         type="number"
-                                        value={enemy.defense}
+                                        value={enemy.def}
                                         onChange={(event) =>
-                                            updateEnemy(
-                                                compositionIndex,
-                                                enemyIndex,
-                                                "defense",
-                                                Number(event.target.value),
-                                            )
+                                            updateEnemy(compositionIndex, enemyIndex, "def", Number(event.target.value))
                                         }
                                         slotProps={{ htmlInput: { min: 0 } }}
                                     />
@@ -394,7 +544,6 @@ function EFCalcUtils() {
 
             <section className="efcalc-panel efcalc-equipment-panel">
                 <h2>Equipment</h2>
-                <p>Gear bonuses are not applied to Combat Stats yet.</p>
                 {gearStatWarnings.length > 0 && (
                     <div className="efcalc-gear-warning" role="alert">
                         <strong>Some gear stats are not in CharacterCombatStats:</strong>
@@ -457,16 +606,15 @@ function EFCalcUtils() {
             </section>
 
             <div className="efcalc-editors efcalc-stat-panels">
-                <section className="efcalc-panel">
-                    <h2>Combat Stats</h2>
-                    <p>Read-only placeholders; stat calculations will be added later.</p>
+                <section className="efcalc-panel" aria-labelledby="efcalc-combat-stats-heading">
+                    <h2 id="efcalc-combat-stats-heading">Combat Stats</h2>
+                    <p>These are the stats you'll see on the Attributes screen.</p>
                     <div className="efcalc-fields efcalc-stat-fields">
                         {combatStatFields.map((field) => (
                             <TextField
                                 key={field}
                                 label={getCombatStatLabel(field)}
-                                type="number"
-                                value={combatStats[field]}
+                                value={formatCombatStat(field, combatStats[field])}
                                 slotProps={{ htmlInput: { readOnly: true } }}
                             />
                         ))}
@@ -474,7 +622,7 @@ function EFCalcUtils() {
                 </section>
                 <section className="efcalc-panel">
                     <h2>Stage Modifiers</h2>
-                    <p>External modifiers; they are not applied to Combat Stats yet.</p>
+                    <p>External modifiers applied in-combat.</p>
                     <div className="efcalc-fields efcalc-stat-fields">
                         {combatStatFields.map((field) => (
                             <TextField
@@ -498,7 +646,9 @@ function EFCalcUtils() {
                 <h2>Attack Damage Placeholders</h2>
                 {selectedCharacter && (
                     <>
-                        <p className="efcalc-result-note">Values below are attack multipliers, not calculated damage.</p>
+                        <p className="efcalc-result-note">
+                            Values below are attack multipliers, not calculated damage.
+                        </p>
                         <div className="efcalc-attack-groups">
                             <section className="efcalc-attack-group">
                                 <h3>Basic Attacks</h3>
@@ -562,7 +712,6 @@ function EFCalcUtils() {
                     </>
                 )}
             </section>
-
         </main>
     );
 }

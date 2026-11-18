@@ -10,6 +10,9 @@
         "will": 171,
         "baseAtk": 329,
         "hp": 5495,
+        "trustStats": {
+            "will": 60
+        },
         "primaryStat": "will",
         "secondaryStat": "intellect",
         "basicAttack": [

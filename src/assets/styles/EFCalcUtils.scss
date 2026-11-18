@@ -35,6 +35,13 @@
         margin-bottom: 20px;
     }
 
+    .efcalc-operator-selector {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 96px;
+        gap: 12px;
+        min-width: 0;
+    }
+
     .efcalc-selectors,
     .efcalc-equipment-grid {
         .MuiInputLabel-root,

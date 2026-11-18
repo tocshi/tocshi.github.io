@@ -1,9 +1,11 @@
+export type GearStats = Readonly<Partial<Record<string, number>>>;
+
 export interface GearStatSource {
     category: string;
     items: readonly {
         id: string;
         name: string;
-        stats: Record<string, number>;
+        stats: GearStats;
     }[];
 }
 

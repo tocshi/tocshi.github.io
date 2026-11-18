@@ -5,9 +5,23 @@
         "type": "Arts Unit",
         "baseAtk": 485,
         "stats": {
-            "will": 113,
-            "dmgBonusNature": 75,
-            "atk": 16.0
+            "will": 156,
+            "dmgBonusNature": 43.33333333333333,
+            "atk": 19.6
+        }
+    },
+    {
+        "id": "umbra-of-frigid-eventide",
+        "name": "Umbra of Frigid Eventide",
+        "type": "Arts Unit",
+        "baseAtk": 505,
+        "stats": {
+            "agility": 156,
+            "atk": 39.0,
+            "dmgBonusHeat": 25.6,
+            "dmgBonusElectric": 25.6,
+            "dmgBonusCryo": 25.6,
+            "dmgBonusNature": 25.6
         }
     }
 ]
