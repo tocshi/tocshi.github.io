@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import "../../assets/styles/EFCalcUtils.scss";
@@ -25,7 +25,7 @@ type CharacterBaseStat = (typeof characterBaseStatFields)[number];
 interface Character {
     id: string;
     name: string;
-    element: string;
+    element: DamageElement;
     class: string;
     strength: number;
     agility: number;
@@ -49,10 +49,13 @@ interface Character {
 interface CharacterAttack {
     multiplier: number;
     hitCount: number;
+    // Some listed totals differ from the actual multiplier of each hit.
+    perHitMultiplier?: number;
     frames: number;
     cancelFrame: number;
     stagger: number;
     ultimateEnergyGain?: number;
+    potentialDamageMultiplier?: { level: number; multiplier: number };
 }
 
 interface UltimateSkill extends CharacterAttack {
@@ -65,6 +68,7 @@ interface Enemy {
     hp: number;
     atk: number;
     def: number;
+    finisherMultiplier?: number;
     resistancePhysical: number;
     resistanceHeat: number;
     resistanceElectric: number;
@@ -122,6 +126,64 @@ interface GearItem {
     stats: GearStats;
 }
 
+const equipmentLabels = { weapon: "Weapon", armor: "Armor", gloves: "Gloves", kit1: "Kit 1", kit2: "Kit 2" };
+type EquipmentSlot = keyof typeof equipmentLabels;
+const equipmentSlots = Object.keys(equipmentLabels) as EquipmentSlot[];
+const equipmentOptions: Record<EquipmentSlot, readonly GearItem[]> = {
+    weapon: weaponsData,
+    armor: armorData,
+    gloves: glovesData,
+    kit1: kitData,
+    kit2: kitData,
+};
+
+interface CalculatorSelections {
+    operatorId: string;
+    compositionId: string;
+    operatorPotentials: Record<string, number | "">;
+    equipment: Partial<Record<EquipmentSlot, string>>;
+}
+
+const selectionsStorageKey = "efcalc.selections.v1";
+const defaultSelections: CalculatorSelections = {
+    operatorId: charactersData[0]?.id ?? "",
+    compositionId: enemyCompositionsData[0]?.id ?? "",
+    operatorPotentials: {},
+    equipment: {},
+};
+
+function readSelections(): CalculatorSelections {
+    try {
+        const storedSelections = window.localStorage.getItem(selectionsStorageKey);
+        const saved: Partial<CalculatorSelections> | null = storedSelections ? JSON.parse(storedSelections) : null;
+        if (!saved) return defaultSelections;
+
+        const operatorPotentials: CalculatorSelections["operatorPotentials"] = {};
+        for (const { id } of charactersData) {
+            const level = saved.operatorPotentials?.[id];
+            if (typeof level === "number" && Number.isInteger(level) && level >= 0 && level <= 5) {
+                operatorPotentials[id] = level;
+            }
+        }
+
+        const equipment: CalculatorSelections["equipment"] = {};
+        for (const slot of equipmentSlots) {
+            const item = equipmentOptions[slot].find(({ id }) => id === saved.equipment?.[slot]);
+            if (item) equipment[slot] = item.id;
+        }
+
+        return {
+            operatorId: charactersData.find(({ id }) => id === saved.operatorId)?.id ?? defaultSelections.operatorId,
+            compositionId:
+                enemyCompositionsData.find(({ id }) => id === saved.compositionId)?.id ?? defaultSelections.compositionId,
+            operatorPotentials,
+            equipment,
+        };
+    } catch {
+        return defaultSelections;
+    }
+}
+
 const emptyCombatStats: CharacterCombatStats = {
     strength: 0,
     agility: 0,
@@ -158,6 +220,24 @@ const emptyCombatStats: CharacterCombatStats = {
 };
 
 const combatStatFields = Object.keys(emptyCombatStats) as Array<keyof CharacterCombatStats>;
+const damageElementFields = {
+    Physical: { bonus: "dmgBonusPhysical", resistance: "resistancePhysical" },
+    Heat: { bonus: "dmgBonusHeat", resistance: "resistanceHeat" },
+    Electric: { bonus: "dmgBonusElectric", resistance: "resistanceElectric" },
+    Cryo: { bonus: "dmgBonusCryo", resistance: "resistanceCryo" },
+    Nature: { bonus: "dmgBonusNature", resistance: "resistanceNature" },
+} as const;
+type DamageElement = keyof typeof damageElementFields;
+
+const attackTypeBonus = {
+    basic: "dmgBonusBasicAttack",
+    dive: "dmgBonusBasicAttack",
+    finisher: "dmgBonusBasicAttack",
+    battle: "dmgBonusBattleSkill",
+    combo: "dmgBonusComboSkill",
+    ultimate: "dmgBonusUltimateSkill",
+} as const;
+type AttackType = keyof typeof attackTypeBonus;
 const pointStats = new Set<keyof CharacterCombatStats>([
     "strength",
     "agility",
@@ -192,6 +272,7 @@ function calculateCombatStats(
     weapon: GearItem | null,
     gear: readonly (GearItem | null)[],
     potential: number,
+    stageModifiers?: CharacterCombatStats,
 ): CharacterCombatStats {
     const setCounts = new Map<string, number>();
     for (const item of gear) {
@@ -200,7 +281,7 @@ function calculateCombatStats(
         }
     }
 
-    const bonuses: Partial<CharacterCombatStats>[] = [];
+    const bonuses: Partial<CharacterCombatStats>[] = stageModifiers ? [stageModifiers] : [];
     for (const item of [weapon, ...gear]) {
         if (item) bonuses.push(item.stats);
     }
@@ -244,6 +325,29 @@ function calculateCombatStats(
     return stats;
 }
 
+function calculateNonCritDamage(
+    attack: CharacterAttack,
+    type: AttackType,
+    element: DamageElement,
+    stats: CharacterCombatStats,
+    enemy: Enemy,
+    potential: number,
+): number {
+    const elementFields = damageElementFields[element];
+    const isFinisher = type === "finisher";
+    const staggerBonus = isFinisher ? stats.dmgBonusStagger : 0;
+    const damageBonus = stats[elementFields.bonus] + stats[attackTypeBonus[type]] + staggerBonus;
+    const potentialBonus = attack.potentialDamageMultiplier;
+    const potentialMultiplier = potentialBonus && potential >= potentialBonus.level ? potentialBonus.multiplier : 1;
+    const perHitMultiplier = attack.perHitMultiplier ?? attack.multiplier / attack.hitCount;
+    const hitMultiplier = (perHitMultiplier / 100) * potentialMultiplier;
+    const defenseMultiplier = enemy.def >= 0 ? 100 / (100 + enemy.def) : 2 - 0.99 ** -enemy.def;
+    const resistanceMultiplier = Math.max(0, 1 - enemy[elementFields.resistance] / 100);
+    const finisherMultiplier = isFinisher ? 1.3 * (enemy.finisherMultiplier ?? 1) : 1;
+
+    return stats.atk * hitMultiplier * (1 + damageBonus / 100) * defenseMultiplier * resistanceMultiplier * finisherMultiplier;
+}
+
 function isCharacterAttribute(value: string): value is CharacterAttribute {
     return characterAttributes.some((attribute) => attribute === value);
 }
@@ -252,9 +356,12 @@ const characters: Character[] = charactersData.map((character) => {
     if (!isCharacterAttribute(character.primaryStat) || !isCharacterAttribute(character.secondaryStat)) {
         throw new Error(`Invalid primary or secondary stat for character "${character.id}".`);
     }
+    const element = Object.keys(damageElementFields).find((element) => element === character.element) as DamageElement | undefined;
+    if (!element) throw new Error(`Invalid damage element for character "${character.id}".`);
 
     return {
         ...character,
+        element,
         primaryStat: character.primaryStat,
         secondaryStat: character.secondaryStat,
     };
@@ -323,29 +430,98 @@ function formatCombatStat(field: keyof CharacterCombatStats, value: number): str
     return `${formatter.format(displayValue)}${pointStats.has(field) ? "" : "%"}`;
 }
 
+function AttackDamageResults({
+    character,
+    enemy,
+    stats,
+    potential,
+}: {
+    character: Character;
+    enemy: Enemy;
+    stats: CharacterCombatStats;
+    potential: number;
+}) {
+    const renderHit = (attack: CharacterAttack, type: AttackType, label: string) => {
+        const damage = calculateNonCritDamage(attack, type, character.element, stats, enemy, potential);
+        return (
+            <div className="efcalc-attack-value" key={label}>
+                <span>{label}</span>
+                <strong>
+                    {Math.round(damage)}
+                    {attack.hitCount > 1 && ` × ${attack.hitCount}`}
+                </strong>
+            </div>
+        );
+    };
+
+    const renderSkills = (skills: CharacterAttack[][], type: "battle" | "combo", label: string) =>
+        skills.map((skill, skillIndex) => (
+            <div className="efcalc-skill" key={skillIndex}>
+                <h5>{label} {skillIndex + 1}</h5>
+                {skill.map((attack, partIndex) => renderHit(attack, type, `Part ${partIndex + 1}`))}
+            </div>
+        ));
+
+    return (
+        <div className="efcalc-damage-target">
+            <h3>{enemy.name}</h3>
+            <div className="efcalc-attack-groups">
+                <section className="efcalc-attack-group">
+                    <h4>Basic Attacks</h4>
+                    {character.basicAttack.map((attack, index) => renderHit(attack, "basic", `SEQ ${index + 1}`))}
+                </section>
+                <section className="efcalc-attack-group">
+                    <h4>Dive Attack</h4>
+                    {renderHit(character.diveAttack, "dive", "Damage")}
+                </section>
+                <section className="efcalc-attack-group">
+                    <h4>Finisher Attack</h4>
+                    {renderHit(character.finisherAttack, "finisher", "Damage")}
+                </section>
+                <section className="efcalc-attack-group">
+                    <h4>Battle Skills</h4>
+                    {renderSkills(character.battleSkills, "battle", "Battle Skill")}
+                </section>
+                <section className="efcalc-attack-group">
+                    <h4>Combo Skills</h4>
+                    {renderSkills(character.comboSkills, "combo", "Combo Skill")}
+                </section>
+                <section className="efcalc-attack-group">
+                    <h4>Ultimate Attack</h4>
+                    {renderHit(character.ultimateSkill, "ultimate", "Damage")}
+                </section>
+            </div>
+        </div>
+    );
+}
+
 function EFCalcUtils() {
     const [characterRecords, setCharacters] = useState<Character[]>(characters);
     const [compositions, setCompositions] = useState<EnemyComposition[]>(enemyCompositionsData);
-    const [selectedCharacterId, setSelectedCharacterId] = useState(characters[0]?.id ?? "");
-    const [operatorPotentials, setOperatorPotentials] = useState<Record<string, number | "">>({});
-    const [selectedCompositionId, setSelectedCompositionId] = useState(enemyCompositionsData[0]?.id ?? "");
-    const [selectedWeapon, setSelectedWeapon] = useState<GearItem | null>(null);
-    const [selectedArmor, setSelectedArmor] = useState<GearItem | null>(null);
-    const [selectedGloves, setSelectedGloves] = useState<GearItem | null>(null);
-    const [selectedKit1, setSelectedKit1] = useState<GearItem | null>(null);
-    const [selectedKit2, setSelectedKit2] = useState<GearItem | null>(null);
+    const [selections, setSelections] = useState(readSelections);
     const [stageModifiers, setStageModifiers] = useState<CharacterCombatStats>({ ...emptyCombatStats });
 
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(selectionsStorageKey, JSON.stringify(selections));
+        } catch {
+            // The calculator still works when browser storage is unavailable.
+        }
+    }, [selections]);
+
+    const { operatorId: selectedCharacterId, compositionId: selectedCompositionId, operatorPotentials } = selections;
+    const getEquipment = (slot: EquipmentSlot) =>
+        equipmentOptions[slot].find((item) => item.id === selections.equipment[slot]) ?? null;
     const selectedCharacter = characterRecords.find((character) => character.id === selectedCharacterId);
     const selectedComposition = compositions.find((composition) => composition.id === selectedCompositionId);
     const potential = operatorPotentials[selectedCharacterId] ?? 0;
+    const selectedWeapon = getEquipment("weapon");
+    const equippedGear = [getEquipment("armor"), getEquipment("gloves"), getEquipment("kit1"), getEquipment("kit2")];
     const combatStats = selectedCharacter
-        ? calculateCombatStats(
-              selectedCharacter,
-              selectedWeapon,
-              [selectedArmor, selectedGloves, selectedKit1, selectedKit2],
-              Number(potential),
-          )
+        ? calculateCombatStats(selectedCharacter, selectedWeapon, equippedGear, Number(potential))
+        : emptyCombatStats;
+    const damageStats = selectedCharacter
+        ? calculateCombatStats(selectedCharacter, selectedWeapon, equippedGear, Number(potential), stageModifiers)
         : emptyCombatStats;
 
     const updateCharacter = (index: number, field: keyof Character, value: number) => {
@@ -387,7 +563,9 @@ function EFCalcUtils() {
                         value={selectedCharacter}
                         getOptionLabel={(character) => character.name}
                         isOptionEqualToValue={(option, value) => option.id === value.id}
-                        onChange={(_, character) => setSelectedCharacterId(character?.id ?? "")}
+                        onChange={(_, character) =>
+                            setSelections((current) => ({ ...current, operatorId: character.id }))
+                        }
                         renderInput={(params) => <TextField {...params} label="Operator" />}
                     />
                     <TextField
@@ -399,7 +577,10 @@ function EFCalcUtils() {
                         onChange={(event) => {
                             const { value, valueAsNumber } = event.target as HTMLInputElement;
                             const level = value === "" ? "" : Math.min(5, Math.max(0, Math.trunc(valueAsNumber)));
-                            setOperatorPotentials((current) => ({ ...current, [selectedCharacterId]: level }));
+                            setSelections((current) => ({
+                                ...current,
+                                operatorPotentials: { ...current.operatorPotentials, [selectedCharacterId]: level },
+                            }));
                         }}
                     />
                 </div>
@@ -411,7 +592,9 @@ function EFCalcUtils() {
                     value={selectedComposition}
                     getOptionLabel={(composition) => composition.name}
                     isOptionEqualToValue={(option, value) => option.id === value.id}
-                    onChange={(_, composition) => setSelectedCompositionId(composition?.id ?? "")}
+                    onChange={(_, composition) =>
+                        setSelections((current) => ({ ...current, compositionId: composition.id }))
+                    }
                     renderInput={(params) => <TextField {...params} label="Enemy" />}
                 />
             </div>
@@ -466,8 +649,8 @@ function EFCalcUtils() {
                 )}
 
                 {selectedComposition && (
-                    <section className="efcalc-panel">
-                        <h2>Enemy composition</h2>
+                    <section className="efcalc-panel" aria-labelledby="efcalc-enemy-heading">
+                        <h2 id="efcalc-enemy-heading">Enemy composition</h2>
                         {/* <p>Edit composition data in src/components/efcalcutils/data/enemies.json.</p> */}
                         {selectedComposition.enemies.map((enemy, enemyIndex) => (
                             <div className="efcalc-enemy" key={`${enemy.name}-${enemyIndex}`}>
@@ -509,7 +692,6 @@ function EFCalcUtils() {
                                         onChange={(event) =>
                                             updateEnemy(compositionIndex, enemyIndex, "def", Number(event.target.value))
                                         }
-                                        slotProps={{ htmlInput: { min: 0 } }}
                                     />
                                     {(
                                         [
@@ -557,51 +739,23 @@ function EFCalcUtils() {
                     </div>
                 )}
                 <div className="efcalc-equipment-grid">
-                    <Autocomplete<GearItem>
-                        disablePortal
-                        options={weaponsData}
-                        value={selectedWeapon}
-                        getOptionLabel={(item) => item.name}
-                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                        onChange={(_, item) => setSelectedWeapon(item)}
-                        renderInput={(params) => <TextField {...params} label="Weapon" />}
-                    />
-                    <Autocomplete<GearItem>
-                        disablePortal
-                        options={armorData}
-                        value={selectedArmor}
-                        getOptionLabel={(item) => item.name}
-                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                        onChange={(_, item) => setSelectedArmor(item)}
-                        renderInput={(params) => <TextField {...params} label="Armor" />}
-                    />
-                    <Autocomplete<GearItem>
-                        disablePortal
-                        options={glovesData}
-                        value={selectedGloves}
-                        getOptionLabel={(item) => item.name}
-                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                        onChange={(_, item) => setSelectedGloves(item)}
-                        renderInput={(params) => <TextField {...params} label="Gloves" />}
-                    />
-                    <Autocomplete<GearItem>
-                        disablePortal
-                        options={kitData}
-                        value={selectedKit1}
-                        getOptionLabel={(item) => item.name}
-                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                        onChange={(_, item) => setSelectedKit1(item)}
-                        renderInput={(params) => <TextField {...params} label="Kit 1" />}
-                    />
-                    <Autocomplete<GearItem>
-                        disablePortal
-                        options={kitData}
-                        value={selectedKit2}
-                        getOptionLabel={(item) => item.name}
-                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                        onChange={(_, item) => setSelectedKit2(item)}
-                        renderInput={(params) => <TextField {...params} label="Kit 2" />}
-                    />
+                    {equipmentSlots.map((slot) => (
+                        <Autocomplete<GearItem>
+                            key={slot}
+                            disablePortal
+                            options={equipmentOptions[slot]}
+                            value={getEquipment(slot)}
+                            getOptionLabel={(item) => item.name}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                            onChange={(_, item) =>
+                                setSelections((current) => ({
+                                    ...current,
+                                    equipment: { ...current.equipment, [slot]: item?.id },
+                                }))
+                            }
+                            renderInput={(params) => <TextField {...params} label={equipmentLabels[slot]} />}
+                        />
+                    ))}
                 </div>
             </section>
 
@@ -620,14 +774,14 @@ function EFCalcUtils() {
                         ))}
                     </div>
                 </section>
-                <section className="efcalc-panel">
-                    <h2>Stage Modifiers</h2>
+                <section className="efcalc-panel" aria-labelledby="efcalc-stage-modifiers-heading">
+                    <h2 id="efcalc-stage-modifiers-heading">Stage Modifiers</h2>
                     <p>External modifiers applied in-combat.</p>
                     <div className="efcalc-fields efcalc-stat-fields">
                         {combatStatFields.map((field) => (
                             <TextField
                                 key={field}
-                                label={getCombatStatLabel(field)}
+                                label={field === "atk" ? "ATK Bonus (%)" : getCombatStatLabel(field)}
                                 type="number"
                                 value={stageModifiers[field]}
                                 onChange={(event) =>
@@ -642,75 +796,20 @@ function EFCalcUtils() {
                 </section>
             </div>
 
-            <section className="efcalc-result" aria-live="polite">
-                <h2>Attack Damage Placeholders</h2>
-                {selectedCharacter && (
-                    <>
-                        <p className="efcalc-result-note">
-                            Values below are attack multipliers, not calculated damage.
-                        </p>
-                        <div className="efcalc-attack-groups">
-                            <section className="efcalc-attack-group">
-                                <h3>Basic Attacks</h3>
-                                {selectedCharacter.basicAttack.map((attack, index) => (
-                                    <div className="efcalc-attack-value" key={`basic-${index}`}>
-                                        <span>SEQ {index + 1}</span>
-                                        <strong>{attack.multiplier}%</strong>
-                                    </div>
-                                ))}
-                            </section>
-                            <section className="efcalc-attack-group">
-                                <h3>Dive Attack</h3>
-                                <div className="efcalc-attack-value">
-                                    <span>Multiplier</span>
-                                    <strong>{selectedCharacter.diveAttack.multiplier}%</strong>
-                                </div>
-                            </section>
-                            <section className="efcalc-attack-group">
-                                <h3>Finisher Attack</h3>
-                                <div className="efcalc-attack-value">
-                                    <span>Multiplier</span>
-                                    <strong>{selectedCharacter.finisherAttack.multiplier}%</strong>
-                                </div>
-                            </section>
-                            <section className="efcalc-attack-group">
-                                <h3>Battle Skills</h3>
-                                {selectedCharacter.battleSkills.map((skill, skillIndex) => (
-                                    <div className="efcalc-skill" key={`battle-skill-${skillIndex}`}>
-                                        <h4>Battle Skill {skillIndex + 1}</h4>
-                                        {skill.map((attack, hitIndex) => (
-                                            <div className="efcalc-attack-value" key={`hit-${hitIndex}`}>
-                                                <span>Hit {hitIndex + 1}</span>
-                                                <strong>{attack.multiplier}%</strong>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ))}
-                            </section>
-                            <section className="efcalc-attack-group">
-                                <h3>Combo Skills</h3>
-                                {selectedCharacter.comboSkills.map((skill, skillIndex) => (
-                                    <div className="efcalc-skill" key={`combo-skill-${skillIndex}`}>
-                                        <h4>Combo Skill {skillIndex + 1}</h4>
-                                        {skill.map((attack, hitIndex) => (
-                                            <div className="efcalc-attack-value" key={`hit-${hitIndex}`}>
-                                                <span>Hit {hitIndex + 1}</span>
-                                                <strong>{attack.multiplier}%</strong>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ))}
-                            </section>
-                            <section className="efcalc-attack-group">
-                                <h3>Ultimate Attack</h3>
-                                <div className="efcalc-attack-value">
-                                    <span>Multiplier</span>
-                                    <strong>{selectedCharacter.ultimateSkill.multiplier}%</strong>
-                                </div>
-                            </section>
-                        </div>
-                    </>
-                )}
+            <section className="efcalc-result" aria-live="polite" aria-labelledby="efcalc-attack-damage-heading">
+                <h2 id="efcalc-attack-damage-heading">Attack Damage Calculations</h2>
+                <p className="efcalc-result-note">
+                    Non-crit damage per hit. Finishers assume a staggered target.
+                </p>
+                {selectedCharacter && selectedComposition?.enemies.map((enemy, index) => (
+                    <AttackDamageResults
+                        key={`${enemy.name}-${index}`}
+                        character={selectedCharacter}
+                        enemy={enemy}
+                        stats={damageStats}
+                        potential={Number(potential)}
+                    />
+                ))}
             </section>
         </main>
     );

@@ -87,9 +87,14 @@
             margin-bottom: 12px;
         }
 
-        h4 {
+        h4,
+        h5 {
             margin: 0 0 8px;
         }
+    }
+
+    .efcalc-damage-target {
+        margin-top: 20px;
     }
 
     .efcalc-result-note {

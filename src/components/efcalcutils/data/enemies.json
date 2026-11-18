@@ -9,6 +9,7 @@
                 "hp": 2292909,
                 "atk": 4130,
                 "def": 100,
+                "finisherMultiplier": 1.75,
                 "resistancePhysical": 0,
                 "resistanceHeat": 0,
                 "resistanceElectric": 0,
