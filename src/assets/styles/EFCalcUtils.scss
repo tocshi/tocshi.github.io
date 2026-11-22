@@ -46,6 +46,7 @@
     .efcalc-equipment-grid {
         .MuiInputLabel-root,
         .MuiOutlinedInput-root,
+        .MuiFormHelperText-root,
         .MuiAutocomplete-popupIndicator,
         .MuiAutocomplete-clearIndicator {
             color: #fff;
@@ -95,6 +96,139 @@
 
     .efcalc-damage-target {
         margin-top: 20px;
+    }
+
+    .efcalc-simulation {
+        .efcalc-simulation-run-controls,
+        .efcalc-simulation-results {
+            margin-top: 20px;
+        }
+
+        dl {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        dd {
+            margin: 4px 0 0;
+            font-weight: 600;
+        }
+
+        .efcalc-critical-hit {
+            color: #ffad63;
+        }
+
+        .light-mode & .efcalc-critical-hit {
+            color: #a4490d;
+        }
+
+        summary {
+            cursor: pointer;
+        }
+    }
+
+    .efcalc-simulation-log-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 20px;
+        margin-top: 12px;
+
+        .MuiTextField-root {
+            min-width: 110px;
+        }
+    }
+
+    .efcalc-simulation-run-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 16px;
+    }
+
+    .efcalc-simulation-log {
+        height: 600px;
+        min-height: 240px;
+        overflow: auto;
+        resize: vertical;
+        margin-top: 8px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+            padding: 6px 8px;
+            white-space: nowrap;
+        }
+    }
+
+    .efcalc-damage-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 0;
+        padding: 2px 4px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+
+        &::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-right: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+            transform: rotate(-45deg);
+        }
+
+        &[aria-expanded="true"]::before {
+            transform: rotate(45deg);
+        }
+    }
+
+    .efcalc-simulation .efcalc-damage-detail-row > td {
+        padding: 12px;
+        white-space: normal;
+    }
+
+    .efcalc-simulation .efcalc-damage-detail {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+        gap: 16px 28px;
+        padding: 14px;
+        border: 1px solid rgba(128, 128, 128, 0.4);
+        border-radius: 8px;
+
+        dl {
+            display: block;
+            margin: 0 0 12px;
+        }
+
+        dl > div {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+            padding: 5px 0;
+        }
+
+        dd {
+            margin: 0;
+            text-align: right;
+        }
+
+        small {
+            display: block;
+            opacity: 0.8;
+        }
     }
 
     .efcalc-result-note {
@@ -206,7 +340,6 @@
     .efcalc-enemy h3 {
         margin-bottom: 12px;
     }
-
 }
 
 .light-mode .efcalc-container {

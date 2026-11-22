@@ -11,6 +11,24 @@
         }
     },
     {
+        "id": "type-42-solemn-phalanx",
+        "name": "Type 42: Solemn Phalanx",
+        "type": "Arts Unit",
+        "baseAtk": 505,
+        "stats": {
+            "intellect": 156,
+            "atk": 25.6,
+            "ultimateGainEfficiency": 46.43
+        },
+        "conditionalEffects": {
+            "debilitatingAssault": {
+                "atk": 32,
+                "dmgBonusArts": 32,
+                "artsDamageTakenPercent": 9.6
+            }
+        }
+    },
+    {
         "id": "umbra-of-frigid-eventide",
         "name": "Umbra of Frigid Eventide",
         "type": "Arts Unit",
@@ -18,10 +36,13 @@
         "stats": {
             "agility": 156,
             "atk": 39.0,
-            "dmgBonusHeat": 25.6,
-            "dmgBonusElectric": 25.6,
-            "dmgBonusCryo": 25.6,
-            "dmgBonusNature": 25.6
+            "dmgBonusArts": 25.6
+        },
+        "conditionalEffects": {
+            "hunterInstinct": {
+                "artsIntensity": 56,
+                "dmgBonusArtsPerStack": 6.4
+            }
         }
     }
 ]

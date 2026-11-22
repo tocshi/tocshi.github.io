@@ -8,8 +8,12 @@ import weaponsData from "./data/weapons.json";
 import armorData from "./data/gear-armor.json";
 import glovesData from "./data/gear-gloves.json";
 import kitData from "./data/gear-kit.json";
-import { findGearStatWarnings } from "./gearStatValidation";
-import type { GearStats, GearStatSource } from "./gearStatValidation";
+import { findGearStatWarnings } from "./utils/gearStatValidation";
+import type { GearStats, GearStatSource } from "./utils/gearStatValidation";
+import { calculateNonCritDamage, damageElementFields } from "./utils/combatDamage";
+import type { AttackType, DamageElement } from "./utils/combatDamage";
+import type { WeaponConditionalEffects } from "./utils/weaponEffects";
+import SoloSimulationPanel from "./SoloSimulationPanel";
 
 enum CharacterAttribute {
     Strength = "strength",
@@ -22,7 +26,7 @@ const characterAttributes = Object.values(CharacterAttribute);
 const characterBaseStatFields = ["baseAtk", "hp", ...characterAttributes] as const;
 type CharacterBaseStat = (typeof characterBaseStatFields)[number];
 
-interface Character {
+export interface Character {
     id: string;
     name: string;
     element: DamageElement;
@@ -46,7 +50,7 @@ interface Character {
     ultimateSkill: UltimateSkill;
 }
 
-interface CharacterAttack {
+export interface CharacterAttack {
     multiplier: number;
     hitCount: number;
     // Some listed totals differ from the actual multiplier of each hit.
@@ -62,13 +66,16 @@ interface UltimateSkill extends CharacterAttack {
     ultimateEnergyCost: number;
 }
 
-interface Enemy {
+export interface Enemy {
     name: string;
     level: number;
     hp: number;
     atk: number;
     def: number;
     finisherMultiplier?: number;
+    staggerThreshold: number;
+    staggerDurationSeconds?: number;
+    finisherSP?: number;
     resistancePhysical: number;
     resistanceHeat: number;
     resistanceElectric: number;
@@ -82,7 +89,7 @@ interface EnemyComposition {
     enemies: Enemy[];
 }
 
-interface CharacterCombatStats {
+export interface CharacterCombatStats {
     strength: number;
     agility: number;
     intellect: number;
@@ -117,6 +124,8 @@ interface CharacterCombatStats {
     finalDmgReduction: number;
 }
 
+type CombatStatBonuses = Partial<CharacterCombatStats> & { dmgBonusArts?: number };
+
 interface GearItem {
     id: string;
     name: string;
@@ -124,6 +133,7 @@ interface GearItem {
     set?: string;
     baseAtk?: number;
     stats: GearStats;
+    conditionalEffects?: WeaponConditionalEffects;
 }
 
 const equipmentLabels = { weapon: "Weapon", armor: "Armor", gloves: "Gloves", kit1: "Kit 1", kit2: "Kit 2" };
@@ -175,7 +185,8 @@ function readSelections(): CalculatorSelections {
         return {
             operatorId: charactersData.find(({ id }) => id === saved.operatorId)?.id ?? defaultSelections.operatorId,
             compositionId:
-                enemyCompositionsData.find(({ id }) => id === saved.compositionId)?.id ?? defaultSelections.compositionId,
+                enemyCompositionsData.find(({ id }) => id === saved.compositionId)?.id ??
+                defaultSelections.compositionId,
             operatorPotentials,
             equipment,
         };
@@ -220,24 +231,7 @@ const emptyCombatStats: CharacterCombatStats = {
 };
 
 const combatStatFields = Object.keys(emptyCombatStats) as Array<keyof CharacterCombatStats>;
-const damageElementFields = {
-    Physical: { bonus: "dmgBonusPhysical", resistance: "resistancePhysical" },
-    Heat: { bonus: "dmgBonusHeat", resistance: "resistanceHeat" },
-    Electric: { bonus: "dmgBonusElectric", resistance: "resistanceElectric" },
-    Cryo: { bonus: "dmgBonusCryo", resistance: "resistanceCryo" },
-    Nature: { bonus: "dmgBonusNature", resistance: "resistanceNature" },
-} as const;
-type DamageElement = keyof typeof damageElementFields;
-
-const attackTypeBonus = {
-    basic: "dmgBonusBasicAttack",
-    dive: "dmgBonusBasicAttack",
-    finisher: "dmgBonusBasicAttack",
-    battle: "dmgBonusBattleSkill",
-    combo: "dmgBonusComboSkill",
-    ultimate: "dmgBonusUltimateSkill",
-} as const;
-type AttackType = keyof typeof attackTypeBonus;
+const artsElements = ["Heat", "Electric", "Cryo", "Nature"] as const;
 const pointStats = new Set<keyof CharacterCombatStats>([
     "strength",
     "agility",
@@ -250,9 +244,10 @@ const pointStats = new Set<keyof CharacterCombatStats>([
 ]);
 const combatStatFormatter = new Intl.NumberFormat("en", { maximumFractionDigits: 2, useGrouping: false });
 const damageBonusFormatter = new Intl.NumberFormat("en", { maximumFractionDigits: 1, useGrouping: false });
-const gearSetBonuses = new Map<string, { pieces: number; stats: Partial<CharacterCombatStats> }>([
+const tideSurgeSet = "tide-surge";
+const gearSetBonuses = new Map<string, { pieces: number; stats: CombatStatBonuses }>([
     [
-        "tide-surge",
+        tideSurgeSet,
         {
             pieces: 3,
             stats: { dmgBonusBattleSkill: 20, dmgBonusComboSkill: 20, dmgBonusUltimateSkill: 20 },
@@ -265,35 +260,48 @@ const gearDataSources: GearStatSource[] = [
     { category: "Gloves", items: glovesData },
     { category: "Kit", items: kitData },
 ];
-export const gearStatWarnings = findGearStatWarnings(gearDataSources, new Set(combatStatFields));
+export const gearStatWarnings = findGearStatWarnings(gearDataSources, new Set([...combatStatFields, "dmgBonusArts"]));
 
-function calculateCombatStats(
-    character: Character,
-    weapon: GearItem | null,
-    gear: readonly (GearItem | null)[],
-    potential: number,
-    stageModifiers?: CharacterCombatStats,
-): CharacterCombatStats {
+function getActiveGearSets(gear: readonly (GearItem | null)[]) {
     const setCounts = new Map<string, number>();
     for (const item of gear) {
         if (item?.set) {
             setCounts.set(item.set, (setCounts.get(item.set) ?? 0) + 1);
         }
     }
+    return Array.from(gearSetBonuses).filter(([set, bonus]) => (setCounts.get(set) ?? 0) >= bonus.pieces);
+}
 
-    const bonuses: Partial<CharacterCombatStats>[] = stageModifiers ? [stageModifiers] : [];
+function calculateAttributeScaledBaseAttack(
+    character: Character,
+    weapon: GearItem | null,
+    stats: CharacterCombatStats,
+) {
+    const baseAtk = character.baseAtk + (character.trustStats?.baseAtk ?? 0) + (weapon?.baseAtk ?? 0);
+    return baseAtk * (1 + 0.005 * stats[character.primaryStat] + 0.002 * stats[character.secondaryStat]);
+}
+
+function calculateCombatStats(
+    character: Character,
+    weapon: GearItem | null,
+    gear: readonly (GearItem | null)[],
+    activeGearSets: ReturnType<typeof getActiveGearSets>,
+    potential: number,
+    stageModifiers?: CharacterCombatStats,
+): CharacterCombatStats {
+    const bonuses: CombatStatBonuses[] = stageModifiers ? [stageModifiers] : [];
     for (const item of [weapon, ...gear]) {
         if (item) bonuses.push(item.stats);
     }
-    setCounts.forEach((count, set) => {
-        const bonus = gearSetBonuses.get(set);
-        if (bonus && count >= bonus.pieces) bonuses.push(bonus.stats);
-    });
+    for (const [, bonus] of activeGearSets) bonuses.push(bonus.stats);
 
     const stats: CharacterCombatStats = { ...emptyCombatStats, critRate: 5, critDamage: 50 };
     for (const bonus of bonuses) {
         for (const field of combatStatFields) {
             if (field !== "finalDmgReduction") stats[field] += bonus[field] ?? 0;
+        }
+        for (const element of artsElements) {
+            stats[damageElementFields[element].bonus] += bonus.dmgBonusArts ?? 0;
         }
     }
     const damageTaken = bonuses.reduce((factor, bonus) => factor * (1 - (bonus.finalDmgReduction ?? 0) / 100), 1);
@@ -304,10 +312,8 @@ function calculateCombatStats(
         stats[attribute] += character[attribute] + (trustStats?.[attribute] ?? 0);
     }
 
-    const baseAtk = character.baseAtk + (trustStats?.baseAtk ?? 0) + (weapon?.baseAtk ?? 0);
-    const attributeMultiplier = 1 + 0.005 * stats[character.primaryStat] + 0.002 * stats[character.secondaryStat];
     // Equipment stats.atk is stored in percentage points.
-    stats.atk = baseAtk * (1 + stats.atk / 100) * attributeMultiplier;
+    stats.atk = calculateAttributeScaledBaseAttack(character, weapon, stats) * (1 + stats.atk / 100);
     stats.hp += character.hp + (trustStats?.hp ?? 0) + 5 * stats.strength;
 
     const physicalResistance = 100 * (1 - 1 / (1 + 0.001 * stats.agility));
@@ -325,29 +331,6 @@ function calculateCombatStats(
     return stats;
 }
 
-function calculateNonCritDamage(
-    attack: CharacterAttack,
-    type: AttackType,
-    element: DamageElement,
-    stats: CharacterCombatStats,
-    enemy: Enemy,
-    potential: number,
-): number {
-    const elementFields = damageElementFields[element];
-    const isFinisher = type === "finisher";
-    const staggerBonus = isFinisher ? stats.dmgBonusStagger : 0;
-    const damageBonus = stats[elementFields.bonus] + stats[attackTypeBonus[type]] + staggerBonus;
-    const potentialBonus = attack.potentialDamageMultiplier;
-    const potentialMultiplier = potentialBonus && potential >= potentialBonus.level ? potentialBonus.multiplier : 1;
-    const perHitMultiplier = attack.perHitMultiplier ?? attack.multiplier / attack.hitCount;
-    const hitMultiplier = (perHitMultiplier / 100) * potentialMultiplier;
-    const defenseMultiplier = enemy.def >= 0 ? 100 / (100 + enemy.def) : 2 - 0.99 ** -enemy.def;
-    const resistanceMultiplier = Math.max(0, 1 - enemy[elementFields.resistance] / 100);
-    const finisherMultiplier = isFinisher ? 1.3 * (enemy.finisherMultiplier ?? 1) : 1;
-
-    return stats.atk * hitMultiplier * (1 + damageBonus / 100) * defenseMultiplier * resistanceMultiplier * finisherMultiplier;
-}
-
 function isCharacterAttribute(value: string): value is CharacterAttribute {
     return characterAttributes.some((attribute) => attribute === value);
 }
@@ -356,7 +339,9 @@ const characters: Character[] = charactersData.map((character) => {
     if (!isCharacterAttribute(character.primaryStat) || !isCharacterAttribute(character.secondaryStat)) {
         throw new Error(`Invalid primary or secondary stat for character "${character.id}".`);
     }
-    const element = Object.keys(damageElementFields).find((element) => element === character.element) as DamageElement | undefined;
+    const element = Object.keys(damageElementFields).find((element) => element === character.element) as
+        | DamageElement
+        | undefined;
     if (!element) throw new Error(`Invalid damage element for character "${character.id}".`);
 
     return {
@@ -457,7 +442,9 @@ function AttackDamageResults({
     const renderSkills = (skills: CharacterAttack[][], type: "battle" | "combo", label: string) =>
         skills.map((skill, skillIndex) => (
             <div className="efcalc-skill" key={skillIndex}>
-                <h5>{label} {skillIndex + 1}</h5>
+                <h5>
+                    {label} {skillIndex + 1}
+                </h5>
                 {skill.map((attack, partIndex) => renderHit(attack, type, `Part ${partIndex + 1}`))}
             </div>
         ));
@@ -517,11 +504,12 @@ function EFCalcUtils() {
     const potential = operatorPotentials[selectedCharacterId] ?? 0;
     const selectedWeapon = getEquipment("weapon");
     const equippedGear = [getEquipment("armor"), getEquipment("gloves"), getEquipment("kit1"), getEquipment("kit2")];
+    const activeGearSets = getActiveGearSets(equippedGear);
     const combatStats = selectedCharacter
-        ? calculateCombatStats(selectedCharacter, selectedWeapon, equippedGear, Number(potential))
+        ? calculateCombatStats(selectedCharacter, selectedWeapon, equippedGear, activeGearSets, Number(potential))
         : emptyCombatStats;
     const damageStats = selectedCharacter
-        ? calculateCombatStats(selectedCharacter, selectedWeapon, equippedGear, Number(potential), stageModifiers)
+        ? calculateCombatStats(selectedCharacter, selectedWeapon, equippedGear, activeGearSets, Number(potential), stageModifiers)
         : emptyCombatStats;
 
     const updateCharacter = (index: number, field: keyof Character, value: number) => {
@@ -550,7 +538,11 @@ function EFCalcUtils() {
         <main className="efcalc-container">
             <header className="efcalc-header">
                 <h1>Endfield Solo Calculator</h1>
-                <p>A work in progress for comparing solo operator stats against enemy compositions.</p>
+                <p>
+                    A work in progress for comparing solo operator stats against enemy compositions. All Operators are
+                    assumed to be at max level with all skills maxed. Weapons are assumed to be at max level, fully
+                    etched. Gear is assumed to be fully artificed.
+                </p>
             </header>
 
             <div className="efcalc-selectors">
@@ -798,19 +790,31 @@ function EFCalcUtils() {
 
             <section className="efcalc-result" aria-live="polite" aria-labelledby="efcalc-attack-damage-heading">
                 <h2 id="efcalc-attack-damage-heading">Attack Damage Calculations</h2>
-                <p className="efcalc-result-note">
-                    Non-crit damage per hit. Finishers assume a staggered target.
-                </p>
-                {selectedCharacter && selectedComposition?.enemies.map((enemy, index) => (
-                    <AttackDamageResults
-                        key={`${enemy.name}-${index}`}
-                        character={selectedCharacter}
-                        enemy={enemy}
-                        stats={damageStats}
-                        potential={Number(potential)}
-                    />
-                ))}
+                <p className="efcalc-result-note">Non-crit damage per hit. Finishers assume a staggered target.</p>
+                {selectedCharacter &&
+                    selectedComposition?.enemies.map((enemy, index) => (
+                        <AttackDamageResults
+                            key={`${enemy.name}-${index}`}
+                            character={selectedCharacter}
+                            enemy={enemy}
+                            stats={damageStats}
+                            potential={Number(potential)}
+                        />
+                    ))}
             </section>
+            <SoloSimulationPanel
+                key={`${selectedCharacterId}-${selectedCompositionId}`}
+                character={selectedCharacter}
+                enemies={selectedComposition?.enemies}
+                stats={damageStats}
+                potential={Number(potential)}
+                tideSurgeActive={activeGearSets.some(([set]) => set === tideSurgeSet)}
+                weapon={selectedCharacter && selectedWeapon?.conditionalEffects ? {
+                    effects: selectedWeapon.conditionalEffects,
+                    intellectAtLeastWill: combatStats.intellect >= combatStats.will,
+                    attributeScaledBaseAttack: calculateAttributeScaledBaseAttack(selectedCharacter, selectedWeapon, damageStats),
+                } : undefined}
+            />
         </main>
     );
 }

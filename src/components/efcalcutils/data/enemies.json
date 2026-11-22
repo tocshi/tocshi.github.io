@@ -10,6 +10,31 @@
                 "atk": 4130,
                 "def": 100,
                 "finisherMultiplier": 1.75,
+                "staggerThreshold": 280,
+                "staggerDurationSeconds": 10,
+                "finisherSP": 100,
+                "resistancePhysical": 0,
+                "resistanceHeat": 0,
+                "resistanceElectric": 0,
+                "resistanceCryo": 0,
+                "resistanceNature": 0
+            }
+        ]
+    },
+    {
+        "id": "training-dummy-90",
+        "name": "Training Dummy lv90",
+        "enemies": [
+            {
+                "name": "Training Dummy lv90",
+                "level": 90,
+                "hp": 10000000000,
+                "atk": 1000,
+                "def": 0,
+                "finisherMultiplier": 1.55,
+                "staggerThreshold": 100,
+                "staggerDurationSeconds": 10,
+                "finisherSP": 100,
                 "resistancePhysical": 0,
                 "resistanceHeat": 0,
                 "resistanceElectric": 0,

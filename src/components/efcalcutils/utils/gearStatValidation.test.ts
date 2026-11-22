@@ -1,5 +1,5 @@
 import { findGearStatWarnings } from "./gearStatValidation";
-import { gearStatWarnings } from "./EFCalcUtils";
+import { gearStatWarnings } from "../EFCalcUtils";
 
 describe("findGearStatWarnings", () => {
     it("validates the current gear JSON against CharacterCombatStats", () => {
@@ -26,8 +26,6 @@ describe("findGearStatWarnings", () => {
             new Set(["def"]),
         );
 
-        expect(warnings).toEqual([
-            { category: "Armor", itemName: "Sample Armor", unknownKeys: ["specialEffect"] },
-        ]);
+        expect(warnings).toEqual([{ category: "Armor", itemName: "Sample Armor", unknownKeys: ["specialEffect"] }]);
     });
 });
